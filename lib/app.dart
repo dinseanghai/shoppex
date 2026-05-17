@@ -22,24 +22,8 @@ class App extends StatelessWidget {
       locale: const Locale('en', 'US'),
       fallbackLocale: const Locale('en', 'UK'),
 
-      // 1. Define the initial route string instead of using 'home'
-      initialRoute: Routes.ONBOARDING,
-
-      getPages: [
-        // 2. Map the Onboarding Route and attach its controller binding
-        GetPage(
-          name: Routes.ONBOARDING,
-          page: () => _flavorBanner(child: const OnboardingView(), show: kDebugMode),
-          binding: BindingsBuilder(() {
-            Get.lazyPut<OnboardingController>(() => OnboardingController());
-          }),
-        ),
-        // 3. Map the Home Route
-        GetPage(
-          name: Routes.HOME,
-          page: () => _flavorBanner(child: const HomeView(), show: kDebugMode),
-        ),
-      ],
+      initialRoute: AppPages.INITIAL, // Uses Routes.ONBOARDING automatically
+      getPages: AppPages.routes,      // Uses the full generated list from app_pages.dart
     );
   }
 

@@ -55,7 +55,7 @@ class OnboardingController extends GetxController {
 
   void nextPage() {
     if (isLastPage) {
-      goToHome();
+      goToSignIn();
     } else {
       pageController.nextPage(
         duration: const Duration(milliseconds: 300),
@@ -64,8 +64,8 @@ class OnboardingController extends GetxController {
     }
   }
 
-  void goToHome() {
-    Get.offAllNamed(Routes.HOME);
+  void goToSignIn() {
+    Get.offAllNamed(Routes.SIGNIN);
   }
 
   @override

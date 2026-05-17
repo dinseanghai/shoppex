@@ -141,11 +141,10 @@ class OnboardingView extends GetView<OnboardingController> {
           CustomButton(
             text: '',
             buttontype: ButtonType.text,
-            onPressed: controller.goToHome,
+            // Change this line to use an explicit anonymous function:
+            onPressed: () => controller.goToSignIn(),
             textWidget: const Row(
-              // 1. Tell the row to stretch across the button's full width
               mainAxisSize: MainAxisSize.max,
-              // 2. This will now successfully push the children to the far right
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Text(
@@ -153,11 +152,7 @@ class OnboardingView extends GetView<OnboardingController> {
                   style: TextStyle(color: Color(0xFF3B59F6), fontSize: 14, fontWeight: FontWeight.w500),
                 ),
                 SizedBox(width: 4),
-                Icon(
-                  Icons.arrow_forward,
-                  size: 16,
-                  color: Color(0xFF3B59F6),
-                ),
+                Icon(Icons.arrow_forward, size: 16, color: Color(0xFF3B59F6)),
               ],
             ),
           )

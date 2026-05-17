@@ -30,4 +30,6 @@ class AppSizes {
   static const gapH20 = SizedBox(height: AppSizes.p20);
   static const gapH24 = SizedBox(height: AppSizes.p24);
   static const gapH32 = SizedBox(height: AppSizes.p32);
+  static const gapH48 = SizedBox(height: AppSizes.p48);
+  static const gapH64 = SizedBox(height: AppSizes.p64);
 }

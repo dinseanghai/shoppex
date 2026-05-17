@@ -10,22 +10,26 @@ import 'flavors.dart';
 
 void main() {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+
   try {
     F.appFlavor = Flavor.values.firstWhere(
-      (e) => e.name == appFlavor,
+          (e) => e.name == appFlavor,
       orElse: () => Flavor.dev,
     );
   } catch (e) {
     F.appFlavor = Flavor.dev;
   }
 
-  DependencyInjection.init();
-
+  // Preserve the splash screen
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
-  Get.lazyPut(() => Connectivity());
-  Get.lazyPut<NetworkInfo>(() => NetworkInfoImpl(Get.find()));
+  // Initialize synchronous dependencies
+  DependencyInjection.init();
+  Get.lazyPut(() => Connectivity(), fenix: true);
+  Get.lazyPut<NetworkInfo>(() => NetworkInfoImpl(Get.find()), fenix: true);
 
-  FlutterNativeSplash.remove();
   runApp(const App());
+
+  // Remove the splash screen right as the App widget mounts
+  FlutterNativeSplash.remove();
 }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_size.dart';
 import '../../core/theme/app_text_styles.dart';
 
 enum ButtonType { elevated, filled, tonal, outlined, text }
@@ -10,10 +9,12 @@ class CustomButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final ButtonType buttontype;
   final IconData? icon;
+  final IconAlignment iconAlignment; // Added: Controls icon position (start or end)
   final bool isLoading;
   final double? width;
   final double height;
   final Widget? textWidget;
+  final bool isBold; // Added: Bold typography toggle flag
 
   const CustomButton({
     super.key,
@@ -21,10 +22,12 @@ class CustomButton extends StatelessWidget {
     required this.onPressed,
     this.buttontype = ButtonType.filled,
     this.icon,
+    this.iconAlignment = IconAlignment.start, // Defaults to front (start)
     this.isLoading = false,
     this.width,
     this.height = 48.0, // Updated to standard hit-target size using p48 concept
     this.textWidget,
+    this.isBold = false, // Added: Defaults to normal text style
   });
 
   // --- Button Styles Linked to App Tokens ---
@@ -65,9 +68,11 @@ class CustomButton extends StatelessWidget {
   ButtonStyle _textStyle() {
     return TextButton.styleFrom(
       foregroundColor: AppColors.buttonPrimary,
-      padding: EdgeInsets.symmetric(horizontal: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       minimumSize: Size.zero,
+    ).copyWith(
+      overlayColor: WidgetStateProperty.all(Colors.transparent),
     );
   }
 
@@ -76,8 +81,10 @@ class CustomButton extends StatelessWidget {
     // 1. Determine text styling colors dynamically based on background
     final bool isDarkBackground = buttontype == ButtonType.filled || buttontype == ButtonType.elevated;
 
+    // Modified: Dynamically appends bold weight if 'isBold' is true
     final TextStyle defaultStyle = AppTextStyles.buttonPrimary.copyWith(
       color: isDarkBackground ? AppColors.textOnPrimary : AppColors.buttonPrimary,
+      fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
     );
 
     // 2. Select the content layer (Default Text vs Custom Widget / Obx)
@@ -126,11 +133,16 @@ class CustomButton extends StatelessWidget {
 
   Widget _buildIconButton(ButtonStyle style, Widget label) {
     switch (buttontype) {
-      case ButtonType.elevated: return ElevatedButton.icon(onPressed: onPressed, style: style, icon: Icon(icon), label: label);
-      case ButtonType.filled: return FilledButton.icon(onPressed: onPressed, style: style, icon: Icon(icon), label: label);
-      case ButtonType.tonal: return FilledButton.tonalIcon(onPressed: onPressed, style: style, icon: Icon(icon), label: label);
-      case ButtonType.outlined: return OutlinedButton.icon(onPressed: onPressed, style: style, icon: Icon(icon), label: label);
-      case ButtonType.text: return TextButton.icon(onPressed: onPressed, style: style, icon: Icon(icon), label: label);
+      case ButtonType.elevated:
+        return ElevatedButton.icon(onPressed: onPressed, style: style, icon: Icon(icon), label: label, iconAlignment: iconAlignment);
+      case ButtonType.filled:
+        return FilledButton.icon(onPressed: onPressed, style: style, icon: Icon(icon), label: label, iconAlignment: iconAlignment);
+      case ButtonType.tonal:
+        return FilledButton.tonalIcon(onPressed: onPressed, style: style, icon: Icon(icon), label: label, iconAlignment: iconAlignment);
+      case ButtonType.outlined:
+        return OutlinedButton.icon(onPressed: onPressed, style: style, icon: Icon(icon), label: label, iconAlignment: iconAlignment);
+      case ButtonType.text:
+        return TextButton.icon(onPressed: onPressed, style: style, icon: Icon(icon), label: label, iconAlignment: iconAlignment);
     }
   }
 
@@ -144,5 +156,3 @@ class CustomButton extends StatelessWidget {
     }
   }
 }
-
-

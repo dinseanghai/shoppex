@@ -3,8 +3,8 @@ import '../modules/home/bindings/home_binding.dart';
 import '../modules/home/views/home_view.dart';
 import '../modules/onboarding/bindings/onboarding_binding.dart';
 import '../modules/onboarding/views/onboarding_view.dart';
-import '../modules/signin/bindings/signin_binding.dart';
-import '../modules/signin/views/signin_view.dart';
+import '../modules/sign_in/bindings/sign_in_binding.dart';
+import '../modules/sign_in/views/sign_in_view.dart';
 
 part 'app_routes.dart';
 
@@ -26,8 +26,8 @@ class AppPages {
     ),
     GetPage(
       name: _Paths.SIGNIN,
-      page: () => const SigninView(),
-      binding: SigninBinding(),
+      page: () => const SignInView(),
+      binding: SignInBinding(),
     ),
   ];
 }

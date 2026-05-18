@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:shoppex/core/constants/app_size.dart';
 import 'package:shoppex/core/constants/app_string.dart';
 import 'package:shoppex/core/theme/app_text_styles.dart';
+import 'package:shoppex/modules/sign_in/widgets/google_signin.dart';
 import 'package:shoppex/shared/widgets/custom_button.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../shared/widgets/custom_textformfield.dart';
@@ -99,7 +100,33 @@ class SignInView extends StatelessWidget {
                       iconAlignment: IconAlignment.start,
                       icon: Icons.login,
                       isBold: true,
-                      text: 'Sign In', onPressed: (){})
+                      text: 'Sign In', onPressed: (){}),
+                  AppSizes.gapH24,
+                  const Row(
+                    children: [
+                      Expanded(child: Divider(color: Color(0xFFE0E0E0))),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16),
+                        child: Text('or continue with', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                      ),
+                      Expanded(child: Divider(color: Color(0xFFE0E0E0))),
+                    ],
+                  ),
+                  AppSizes.gapH24,
+                  GoogleSignInButton(onTap: (){}),
+                  AppSizes.gapH48,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text("Don't have an account? ", style: TextStyle(color: Colors.grey, fontSize: 14)),
+                      GestureDetector(
+                        child: const Text(
+                          'Sign Up',
+                          style: TextStyle(color: Colors.orange, fontSize: 14, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),

@@ -10,13 +10,12 @@ import '../../../shared/widgets/custom_textformfield.dart';
 import '../controllers/sign_in_controller.dart';
 
 class SignInView extends StatelessWidget {
-  const SignInView({super.key});
+  const SignInView({super.key}); // Made const since we removed local stateful variables
 
   @override
   Widget build(BuildContext context) {
+    // Injecting the controller
     final controller = Get.put(SignInController(networkInfo: Get.find()));
-
-    // REMOVED: bool _obscurePassword = true; (We will use the controller state instead)
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -25,7 +24,7 @@ class SignInView extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Form(
-              key: controller.formKey,
+              key: controller.formKey, // Uses the controller's formKey
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -63,17 +62,22 @@ class SignInView extends StatelessWidget {
                     prefixIcon: Icons.mail_outline_outlined,
                     hint: 'Enter your email',
                     keyboardType: TextInputType.emailAddress,
+                    controller: controller.emailController, // Correct
+                    validator: controller.validateEmail,
                   ),
                   AppSizes.gapH16,
                   Text('Password', style: AppTextStyles.displaySmall_Primary),
                   AppSizes.gapH8,
 
+                  // Listens to password visibility toggles
                   Obx(
                         () => CustomFormField(
                       prefixIcon: Icons.lock_outline,
                       hint: 'Enter your password',
                       isPassword: controller.isPasswordObscured.value,
                       keyboardType: TextInputType.visiblePassword,
+                      controller: controller.passwordController, // Correct
+                      //validator: controller.validatePassword,
                       suffixIcon: IconButton(
                         icon: Icon(
                           controller.isPasswordObscured.value
@@ -86,7 +90,7 @@ class SignInView extends StatelessWidget {
                   ),
                   Align(
                     alignment: Alignment.centerRight,
-                    child: IntrinsicWidth( // Forces the button to only take up its required text width
+                    child: IntrinsicWidth(
                       child: CustomButton(
                         buttontype: ButtonType.text,
                         text: 'Forgot Password?',
@@ -95,34 +99,53 @@ class SignInView extends StatelessWidget {
                     ),
                   ),
                   AppSizes.gapH24,
-                  CustomButton(
-                    buttontype: ButtonType.elevated,
+
+                  // Wrapped in Obx to listen to loading state changes
+                  Obx(
+                        () => CustomButton(
+                      buttontype: ButtonType.elevated,
                       iconAlignment: IconAlignment.start,
                       icon: Icons.login,
                       isBold: true,
-                      text: 'Sign In', onPressed: (){}),
+                      text: 'Sign In',
+                      isLoading: controller.isLoading.value, // Assuming CustomButton accepts isLoading
+                      onPressed: controller.isLoading.value
+                          ? null // Prevents accidental double-tap submissions while loading
+                          : () => controller.handleSignIn(), // Triggers validation safely
+                    ),
+                  ),
                   AppSizes.gapH24,
                   const Row(
                     children: [
                       Expanded(child: Divider(color: Color(0xFFE0E0E0))),
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 16),
-                        child: Text('or continue with', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                        child: Text(
+                          'or continue with',
+                          style: TextStyle(color: Colors.grey, fontSize: 12),
+                        ),
                       ),
                       Expanded(child: Divider(color: Color(0xFFE0E0E0))),
                     ],
                   ),
                   AppSizes.gapH24,
-                  GoogleSignInButton(onTap: (){}),
+                  GoogleSignInButton(onTap: () {}),
                   AppSizes.gapH48,
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text("Don't have an account? ", style: TextStyle(color: Colors.grey, fontSize: 14)),
+                      const Text(
+                        "Don't have an account? ",
+                        style: TextStyle(color: Colors.grey, fontSize: 14),
+                      ),
                       GestureDetector(
                         child: const Text(
                           'Sign Up',
-                          style: TextStyle(color: Colors.orange, fontSize: 14, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            color: Colors.orange,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ],

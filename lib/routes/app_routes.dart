@@ -12,5 +12,5 @@ abstract class _Paths {
   _Paths._();
   static const HOME = '/home';
   static const ONBOARDING = '/onboarding';
-  static const SIGNIN = '/signin';
+  static const SIGNIN = '/sign_in';
 }

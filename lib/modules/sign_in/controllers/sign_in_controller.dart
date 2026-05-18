@@ -1,10 +1,13 @@
 import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/errors/failures.dart';
 import '../../../core/network/network_info.dart';
 import '../../home/widgets/snackbars.dart';
 
 class SignInController extends GetxController {
+  final formKey = GlobalKey<FormState>();
+  var isPasswordObscured = true.obs;
   // 1. Inject the NetworkInfo dependency
   final NetworkInfo networkInfo;
 
@@ -13,6 +16,10 @@ class SignInController extends GetxController {
   StreamSubscription? _networkSubscription;
 
   SignInController({required this.networkInfo});
+
+  void togglePasswordVisibility() {
+    isPasswordObscured.value = !isPasswordObscured.value;
+  }
 
   @override
   void onInit() {

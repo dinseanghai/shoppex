@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+
 import '../../core/constants/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
+import 'loading_widget.dart';
 
 enum ButtonType { elevated, filled, tonal, outlined, text }
 
@@ -9,12 +11,12 @@ class CustomButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final ButtonType buttontype;
   final IconData? icon;
-  final IconAlignment iconAlignment; // Added: Controls icon position (start or end)
+  final IconAlignment iconAlignment;
   final bool isLoading;
   final double? width;
   final double height;
   final Widget? textWidget;
-  final bool isBold; // Added: Bold typography toggle flag
+  final bool isBold;
 
   const CustomButton({
     super.key,
@@ -22,12 +24,12 @@ class CustomButton extends StatelessWidget {
     required this.onPressed,
     this.buttontype = ButtonType.filled,
     this.icon,
-    this.iconAlignment = IconAlignment.start, // Defaults to front (start)
+    this.iconAlignment = IconAlignment.start,
     this.isLoading = false,
     this.width,
-    this.height = 48.0, // Updated to standard hit-target size using p48 concept
+    this.height = 48.0,
     this.textWidget,
-    this.isBold = false, // Added: Defaults to normal text style
+    this.isBold = false,
   });
 
   // --- Button Styles Linked to App Tokens ---
@@ -50,7 +52,7 @@ class CustomButton extends StatelessWidget {
 
   ButtonStyle _tonalStyle() {
     return FilledButton.styleFrom(
-      backgroundColor: AppColors.info.withOpacity(0.2), // Derived tonal look from Info Token
+      backgroundColor: AppColors.info.withOpacity(0.2),
       foregroundColor: AppColors.buttonPrimary,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
     );
@@ -81,7 +83,6 @@ class CustomButton extends StatelessWidget {
     // 1. Determine text styling colors dynamically based on background
     final bool isDarkBackground = buttontype == ButtonType.filled || buttontype == ButtonType.elevated;
 
-    // Modified: Dynamically appends bold weight if 'isBold' is true
     final TextStyle defaultStyle = AppTextStyles.buttonPrimary.copyWith(
       color: isDarkBackground ? AppColors.textOnPrimary : AppColors.buttonPrimary,
       fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
@@ -90,15 +91,11 @@ class CustomButton extends StatelessWidget {
     // 2. Select the content layer (Default Text vs Custom Widget / Obx)
     final Widget labelWidget = textWidget ?? Text(text, style: defaultStyle);
 
-    // 3. Loading Indicator with color match guarantees
+    // 3. Modern Loading Indicator integration with explicit style mapping
     final Widget finalContent = isLoading
-        ? SizedBox(
-      width: 20,
-      height: 20,
-      child: CircularProgressIndicator(
-        strokeWidth: 2,
-        color: isDarkBackground ? AppColors.textOnPrimary : AppColors.buttonPrimary,
-      ),
+        ? LoadingWidget(
+      isButtonMode: true,
+      color: isDarkBackground ? AppColors.textOnPrimary : AppColors.buttonPrimary,
     )
         : labelWidget;
 
@@ -113,6 +110,7 @@ class CustomButton extends StatelessWidget {
     }
 
     // 5. Build Content Engine Layout
+    // Guarding check: If it's loading, we force standard button layout so the loader sits perfectly centered
     Widget button;
     if (icon != null && !isLoading) {
       button = _buildIconButton(currentStyle, finalContent);

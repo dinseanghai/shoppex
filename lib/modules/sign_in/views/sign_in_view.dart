@@ -76,8 +76,8 @@ class SignInView extends StatelessWidget {
                       hint: 'Enter your password',
                       isPassword: controller.isPasswordObscured.value,
                       keyboardType: TextInputType.visiblePassword,
-                      controller: controller.passwordController, // Correct
-                      //validator: controller.validatePassword,
+                      controller: controller.passwordController,
+                      validator: controller.validateRequired,
                       suffixIcon: IconButton(
                         icon: Icon(
                           controller.isPasswordObscured.value
@@ -108,10 +108,11 @@ class SignInView extends StatelessWidget {
                       icon: Icons.login,
                       isBold: true,
                       text: 'Sign In',
-                      isLoading: controller.isLoading.value, // Assuming CustomButton accepts isLoading
+                      isLoading: controller.isLoading.value,
+                      // FIX: Passing an empty function prevents double-taps without breaking the button's background style
                       onPressed: controller.isLoading.value
-                          ? null // Prevents accidental double-tap submissions while loading
-                          : () => controller.handleSignIn(), // Triggers validation safely
+                          ? () {}
+                          : () => controller.handleSignIn(),
                     ),
                   ),
                   AppSizes.gapH24,

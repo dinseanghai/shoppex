@@ -1,9 +1,9 @@
 mixin FormValidators { // <-- Just change 'abstract class' to 'mixin'
 
   /// Validates that a field is not empty.
-  String? validateRequired(String? value, {String fieldName = 'This field'}) {
+  String? validateRequired(String? value) {
     if (value == null || value.trim().isEmpty) {
-      return '$fieldName is required.';
+      return 'Password is required.';
     }
     return null;
   }

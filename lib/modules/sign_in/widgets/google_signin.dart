@@ -36,7 +36,7 @@ class GoogleSignInButton extends StatelessWidget {
             const Text(
               'Google',
               style: TextStyle(
-                fontSize: 18.0,
+                fontSize: 16.0,
                 fontWeight: FontWeight.w600,
                 color: Color(0xFF1F1F1F), // Off-black color for a modern look
                 fontFamily: 'Roboto', // Use your app's preferred font

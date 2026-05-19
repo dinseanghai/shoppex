@@ -10,7 +10,7 @@ class CustomFormField extends StatefulWidget {
   final bool? autofocus;
   final TextEditingController? controller;
   final TextInputType keyboardType;
-  final String? Function(String?)? validator; // Fixed the typo from 'valicator'
+  final String? Function(String?)? validator;
 
   const CustomFormField({
     super.key,

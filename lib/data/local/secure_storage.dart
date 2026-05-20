@@ -8,7 +8,7 @@ class SecureStorage extends GetxService {
     await storage.write(key: 'token', value: value);
   }
 
-  static void remove(String value) async {
+  static Future<void> remove(String value) async {
     await storage.delete(key: 'token');
   }
 

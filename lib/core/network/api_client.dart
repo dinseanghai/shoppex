@@ -4,6 +4,7 @@ import 'package:get/get.dart' hide Response;
 import 'package:shoppex/core/config/app_config.dart';
 import 'package:shoppex/core/network/api_endpoints.dart';
 import 'package:shoppex/data/models/login_model.dart';
+import 'package:shoppex/shared/services/auth_service.dart';
 import '../../flavors.dart';
 
 class ApiClient extends GetxService {
@@ -33,11 +34,16 @@ class ApiClient extends GetxService {
     );
   }
 
-  Future<Response<dynamic>> register(LoginReq req) async {
-    return await _dio.post(ApiEndpoints.register, data: req.toJson());
-  }
-
   Future<Response<dynamic>> login(LoginReq req) async {
     return await _dio.post(ApiEndpoints.login, data: req.toJson());
+  }
+
+  Future<Response<dynamic>> logout(String token) async {
+    return await _dio.post(
+      ApiEndpoints.logout,
+      options: Options(
+        headers: {'Authorization': 'Bearer $token'}, // ✅ Fixed Header format
+      ),
+    );
   }
 }

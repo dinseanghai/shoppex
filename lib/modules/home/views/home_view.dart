@@ -7,9 +7,22 @@ class HomeView extends GetView<HomeController> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("HomeScreen")),
-
-    );
+    // Obx keeps the UI reactive so it can display a loading indicator
+    return Obx(() => Scaffold(
+      appBar: AppBar(
+        title: const Text("HomeScreen"),
+        actions: [
+          controller.isLoading.value
+              ? const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0),
+            child: Center(child: CircularProgressIndicator(color: Colors.white)),
+          )
+              : IconButton(
+            onPressed: () => controller.confirmLogout(),
+            icon: const Icon(Icons.logout_outlined),
+          )
+        ],
+      ),
+    ));
   }
 }

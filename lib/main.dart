@@ -8,7 +8,7 @@ import 'app.dart';
 import 'core/network/network_info.dart';
 import 'flavors.dart';
 
-void main() {
+void main() async { // 1. Ensure 'async' is here
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
 
   try {
@@ -20,16 +20,16 @@ void main() {
     F.appFlavor = Flavor.dev;
   }
 
-  // Preserve the splash screen
+  // Preserve the splash screen while loading dependencies
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
-  // Initialize synchronous dependencies
-  DependencyInjection.init();
+  // 2. CRITICAL: Await the dependency initialization so it reads the token FIRST
+  await DependencyInjection.init();
+
   Get.lazyPut(() => Connectivity(), fenix: true);
   Get.lazyPut<NetworkInfo>(() => NetworkInfoImpl(Get.find()), fenix: true);
 
+  // 3. Now run the app and remove the splash screen
   runApp(const App());
-
-  // Remove the splash screen right as the App widget mounts
   FlutterNativeSplash.remove();
 }

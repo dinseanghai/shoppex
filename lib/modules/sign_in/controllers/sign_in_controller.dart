@@ -4,6 +4,7 @@ import '../../../core/network/network_info.dart';
 import '../../../core/utils/validators.dart';
 import '../../../data/local/secure_storage.dart';
 import '../../../data/models/login_model.dart';
+import '../../../dependency_injection.dart';
 import '../../../routes/app_pages.dart';
 import '../../home/widgets/snackbars.dart';
 import 'dart:async';
@@ -55,17 +56,23 @@ class SignInController extends GetxController with FormValidators {
   }
 
   void login(LoginReq req) async {
-    // Safety Guard: If it's already fetching, ignore subsequent taps
     if (isLoading.value) return;
 
     try {
-      isLoading.value = true; // 1. Shows progress indicator on CustomButton
+      isLoading.value = true;
 
       final response = await _authprovider.login(req);
 
       if (response.statusCode == 200) {
         final token = response.data['token'];
-        SecureStorage.write(token);
+
+        // 1. Await the write operation so it completes entirely before routing
+        await SecureStorage.write(token);
+
+        // 2. Inform your DependencyInjection state that user is authenticated
+        DependencyInjection.isAuthenticated.value = true;
+
+        // 3. Now route away safely
         Get.offAllNamed(Routes.HOME);
         return;
       }
@@ -76,7 +83,7 @@ class SignInController extends GetxController with FormValidators {
         middleText: e.toString().replaceFirst("Exception: ", ""),
       );
     } finally {
-      isLoading.value = false; // 2. Hides progress indicator automatically on success or failure
+      isLoading.value = false;
     }
   }
 

@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:shoppex/routes/route_middlewares.dart';
 import '../modules/home/bindings/home_binding.dart';
 import '../modules/home/views/home_view.dart';
 import '../modules/onboarding/bindings/onboarding_binding.dart';
@@ -23,11 +24,13 @@ class AppPages {
       name: _Paths.ONBOARDING,
       page: () => const OnboardingView(),
       binding: OnboardingBinding(),
+      middlewares: [AuthMiddleware()],
     ),
     GetPage(
       name: _Paths.SIGNIN,
       page: () => SignInView(),
       binding: SignInBinding(),
+      middlewares: [AuthMiddleware()],
     ),
   ];
 }

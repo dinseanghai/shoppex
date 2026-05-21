@@ -5,7 +5,8 @@ import '../../../core/utils/validators.dart';
 import '../../../data/local/secure_storage.dart';
 import '../../../data/models/login_model.dart';
 import '../../../routes/app_pages.dart';
-import '../../home/widgets/snackbars.dart';
+import '../../../shared/services/auth_service.dart';
+import '../../../shared/widgets/snackbars.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -65,8 +66,17 @@ class SignInController extends GetxController with FormValidators {
 
       if (response.statusCode == 200) {
         final token = response.data['token'];
-        SecureStorage.write(token);
+        final name = response.data['user']['name'] ?? 'User'; // Grab user's name from response
+
+        await SecureStorage.write(token);
+
+        AuthService.isAuthenticated.value = true;
+        AuthService.authToken.value = token;
+
         Get.offAllNamed(Routes.HOME);
+
+        // 🔥 Call the customized pill snackbar here!
+        Snackbars.showWelcomeBack(name);
         return;
       }
       throw Exception(response.data['message'] ?? 'An unknown error occurred');

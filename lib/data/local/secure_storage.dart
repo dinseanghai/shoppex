@@ -2,18 +2,31 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
 
 class SecureStorage extends GetxService {
-  static final storage = FlutterSecureStorage();
+  static const _storage = FlutterSecureStorage();
+  static String? _cachedToken;
 
-  static void write(String value) async {
-    await storage.write(key: 'token', value: value);
+  static Future<void> init() async {
+    _cachedToken = await _storage.read(key: 'token');
+
   }
 
-  static Future<void> remove(String value) async {
-    await storage.delete(key: 'token');
+  static bool get hasToken {
+    final exists = _cachedToken != null && _cachedToken!.isNotEmpty;
+
+    return exists;
   }
 
-  static Future<String?> getToken() async {
-    return await storage.read(key: 'token');
+  static String? get token => _cachedToken;
+
+  static Future<void> write(String value) async {
+    await _storage.write(key: 'token', value: value);
+    _cachedToken = value;
+
   }
 
+  static Future<void> remove() async {
+    await _storage.delete(key: 'token');
+    _cachedToken = null;
+
+  }
 }

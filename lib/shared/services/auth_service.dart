@@ -1,49 +1,51 @@
-import 'package:flutter/material.dart' show Colors;
 import 'package:get/get.dart';
-import 'package:shoppex/core/network/api_client.dart';
+import '../../core/network/api_client.dart';
 import '../../data/local/secure_storage.dart';
+import '../../routes/app_pages.dart';
+
+import 'package:get/get.dart';
+// Import your AppPages / Routes / ApiClient / SecureStorage here
 
 class AuthService extends GetxService {
-  static RxBool isAuthenticated = false.obs;
-  static AuthService auth = Get.find<AuthService>();
-  static RxString authToken = RxString('');
+  static final isAuthenticated = false.obs;
+  static final authToken = ''.obs;
+
   final ApiClient _provider = Get.find<ApiClient>();
 
-  @override
-  void onInit() {
-    _checkAuth();
-    super.onInit();
-  }
+  static AuthService get to => Get.find<AuthService>();
 
-  void _checkAuth() async {
-    final token = await SecureStorage.getToken();
-    // ✅ Fixed Null check operator crash logic
-    if (token != null && token.isNotEmpty) {
-      isAuthenticated(true);
-      authToken(token);
+  /// Call this in main() during startup to bootstrap the Auth state
+  Future<void> initAuth() async {
+    // ✅ FIX: Force SecureStorage to read the hardware disk *before* checking credentials!
+    await SecureStorage.init();
+
+    if (SecureStorage.hasToken) {
+      isAuthenticated.value = true;
+      authToken.value = SecureStorage.token ?? '';
     } else {
-      isAuthenticated(false);
+      isAuthenticated.value = false;
+      authToken.value = '';
     }
   }
+
+  /// Synchronous helper for your Middleware
+  bool get hasToken => isAuthenticated.value && authToken.value.isNotEmpty;
 
   Future<void> logout() async {
     try {
       final res = await _provider.logout(authToken.value);
 
-      // Checking for both 200 (OK) or 204 (No Content) depending on your API backend
       if (res.statusCode == 200 || res.statusCode == 204) {
-        await SecureStorage.remove('token');
+        await SecureStorage.remove();
 
-        // ✅ Reset the Auth States
-        isAuthenticated(false);
-        authToken('');
+        // Reset states cleanly
+        isAuthenticated.value = false;
+        authToken.value = '';
 
-        // ✅ Redirect user back to login screen
-        Get.offAllNamed('/sign_in');
+        Get.offAllNamed(Routes.SIGNIN);
       }
     } catch (e) {
       Get.defaultDialog(middleText: "Logout error: ${e.toString()}");
     }
   }
-
 }

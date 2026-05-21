@@ -3,8 +3,8 @@ import 'dart:ui';
 
 class AppColors {
   static const Color background = Color(0xFFFFFFFF);
-  static const Color surface = Color(0xFFFFFFFF);
-  static Color outline = Color(0xFF79747E);
+  static const Color surface = Color(0xFFEDEDED);
+  static Color outline = Color(0xFFFFFFFF);
 
   static const Color textPrimary = Color(0xFF000000);
   static const Color textSecondary = Color(0xFF757575);

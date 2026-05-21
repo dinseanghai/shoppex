@@ -6,6 +6,7 @@ import 'package:shoppex/core/theme/app_text_styles.dart';
 import 'package:shoppex/modules/sign_in/widgets/google_signin.dart';
 import 'package:shoppex/shared/widgets/custom_button.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../routes/app_pages.dart';
 import '../../../shared/widgets/custom_textformfield.dart';
 import '../controllers/sign_in_controller.dart';
 
@@ -94,7 +95,9 @@ class SignInView extends StatelessWidget {
                       child: CustomButton(
                         buttontype: ButtonType.text,
                         text: 'Forgot Password?',
-                        onPressed: () {},
+                        onPressed: () {
+
+                        },
                       ),
                     ),
                   ),
@@ -140,6 +143,7 @@ class SignInView extends StatelessWidget {
                         style: TextStyle(color: Colors.grey, fontSize: 14),
                       ),
                       GestureDetector(
+                        onTap: () {Get.toNamed(Routes.SIGN_UP);},
                         child: const Text(
                           'Sign Up',
                           style: TextStyle(

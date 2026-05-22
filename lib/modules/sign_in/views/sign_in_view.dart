@@ -16,6 +16,7 @@ class SignInView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Injecting the controller
+    final formKey = GlobalKey<FormState>();
     final controller = Get.put(SignInController(networkInfo: Get.find()));
 
     return Scaffold(
@@ -25,7 +26,8 @@ class SignInView extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Form(
-              key: controller.formKey, // Uses the controller's formKey
+              // Uses the controller's formKey
+              key: formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -115,7 +117,7 @@ class SignInView extends StatelessWidget {
                       // FIX: Passing an empty function prevents double-taps without breaking the button's background style
                       onPressed: controller.isLoading.value
                           ? () {}
-                          : () => controller.handleSignIn(),
+                          : () => controller.handleSignIn(formKey.currentState),
                     ),
                   ),
                   AppSizes.gapH24,
@@ -143,7 +145,7 @@ class SignInView extends StatelessWidget {
                         style: TextStyle(color: Colors.grey, fontSize: 14),
                       ),
                       GestureDetector(
-                        onTap: () {Get.toNamed(Routes.SIGN_UP);},
+                        onTap: () {Get.offNamed(Routes.SIGN_UP);},
                         child: const Text(
                           'Sign Up',
                           style: TextStyle(

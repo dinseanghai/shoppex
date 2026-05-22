@@ -17,7 +17,6 @@ class SignInController extends GetxController with FormValidators {
   final NetworkInfo networkInfo;
 
   // --- Form & Input Elements ---
-  final formKey = GlobalKey<FormState>();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
@@ -39,9 +38,9 @@ class SignInController extends GetxController with FormValidators {
 
   /// Entry point triggered by the CustomButton in your SignInView
   // 1. CRITICAL: Add the 'async' keyword here
-  void handleSignIn() {
+  void handleSignIn(FormState? formState) {
     // 1. Triggers form validation
-    if (formKey.currentState!.validate()) {
+    if (formState != null && formState.validate()) {
 
       // 2. Map form data safely
       final req = LoginReq(

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shoppex/core/constants/app_colors.dart';
 
 class CustomFormField extends StatefulWidget {
   final String? label;
   final String? hint;
+  final Widget? prefix;
   final IconData? prefixIcon;
   final Widget? suffixIcon;
   final bool isPassword;
@@ -12,12 +14,14 @@ class CustomFormField extends StatefulWidget {
   final TextInputType keyboardType;
   final String? Function(String?)? validator;
   final FocusNode? focusNode;
-  final bool showCheckmarkOnInput; // Added flag to toggle this feature selectively
+  final bool showCheckmarkOnInput;
+  final List<TextInputFormatter>? inputFormatters;
 
   const CustomFormField({
     super.key,
     this.label,
     this.hint,
+    this.prefix,
     this.prefixIcon,
     this.suffixIcon,
     this.isPassword = false,
@@ -26,7 +30,8 @@ class CustomFormField extends StatefulWidget {
     required this.keyboardType,
     this.validator,
     this.focusNode,
-    this.showCheckmarkOnInput = false, // Default is false so it doesn't affect all fields
+    this.showCheckmarkOnInput = false,
+    this.inputFormatters,
   });
 
   @override
@@ -46,10 +51,8 @@ class _CustomFormFieldState extends State<CustomFormField> {
     _effectiveFocusNode = widget.focusNode ?? FocusNode();
     _effectiveFocusNode.addListener(_onFocusChange);
 
-    // Set up text controller listener for the checkmark behavior
-    if (widget.showCheckmarkOnInput && widget.controller != null) {
+    if (widget.controller != null) {
       _hasText = widget.controller!.text.isNotEmpty;
-      widget.controller!.addListener(_onTextChange);
     }
   }
 
@@ -59,11 +62,6 @@ class _CustomFormFieldState extends State<CustomFormField> {
     if (widget.focusNode == null) {
       _effectiveFocusNode.dispose();
     }
-
-    // Clean up text listener safely
-    if (widget.showCheckmarkOnInput && widget.controller != null) {
-      widget.controller!.removeListener(_onTextChange);
-    }
     super.dispose();
   }
 
@@ -71,25 +69,11 @@ class _CustomFormFieldState extends State<CustomFormField> {
     setState(() {});
   }
 
-  void _onTextChange() {
-    if (widget.controller == null) return;
-
-    final containsText = widget.controller!.text.isNotEmpty;
-    if (_hasText != containsText) {
-      setState(() {
-        _hasText = containsText;
-      });
-    }
-  }
-
   Widget? _buildSuffixIcon() {
-    // 1. Password Visibility Toggle takes priority
     if (widget.isPassword) {
       return IconButton(
         icon: Icon(
-          _obscureText
-              ? Icons.visibility_off_outlined
-              : Icons.visibility_outlined,
+          _obscureText ? Icons.visibility_off_outlined : Icons.visibility_outlined,
           size: 20,
           color: Colors.grey,
         ),
@@ -101,24 +85,22 @@ class _CustomFormFieldState extends State<CustomFormField> {
       );
     }
 
-    // 2. Dynamic Green Checkmark if enabled and text is present
     if (widget.showCheckmarkOnInput && _hasText) {
       return const Icon(
-        Icons.check_circle_outline, // Renders a filled green checkmark circle
+        Icons.check_circle_outline,
         color: AppColors.success,
         size: 22,
       );
     }
 
-    // 3. Fallback to manually provided suffixIcon (or null/blank)
     return widget.suffixIcon;
   }
 
   @override
   Widget build(BuildContext context) {
-    final Color prefixIconColor = _effectiveFocusNode.hasFocus
+    final Color currentIconColor = _effectiveFocusNode.hasFocus
         ? AppColors.buttonPrimary
-        : Colors.grey;
+        : Colors.grey.shade500;
 
     return TextFormField(
       focusNode: _effectiveFocusNode,
@@ -127,18 +109,24 @@ class _CustomFormFieldState extends State<CustomFormField> {
       obscureText: _obscureText,
       keyboardType: widget.keyboardType,
       validator: widget.validator,
+      inputFormatters: widget.inputFormatters, // Correctly placed inside TextFormField configuration
       textAlignVertical: TextAlignVertical.center,
+      onChanged: (value) {
+        if (widget.showCheckmarkOnInput) {
+          final containsText = value.isNotEmpty;
+          if (_hasText != containsText) {
+            setState(() {
+              _hasText = containsText;
+            });
+          }
+        }
+      },
       decoration: InputDecoration(
         labelText: widget.label,
-        labelStyle: WidgetStateTextStyle.resolveWith((states) {
-          if (states.contains(WidgetState.focused)) {
-            return const TextStyle(
-              color: AppColors.buttonPrimary,
-              fontWeight: FontWeight.bold,
-            );
-          }
-          return const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold);
-        }),
+        labelStyle: const TextStyle(
+          color: Colors.grey,
+          fontWeight: FontWeight.bold,
+        ),
         floatingLabelStyle: WidgetStateTextStyle.resolveWith((states) {
           if (states.contains(WidgetState.focused)) {
             return const TextStyle(
@@ -146,28 +134,35 @@ class _CustomFormFieldState extends State<CustomFormField> {
               fontWeight: FontWeight.bold,
             );
           }
-          return const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold);
+          if (states.contains(WidgetState.error)) {
+            return const TextStyle(
+              color: AppColors.error,
+              fontWeight: FontWeight.bold,
+            );
+          }
+          return TextStyle(
+            color: Colors.grey.shade600,
+            fontWeight: FontWeight.bold,
+          );
         }),
         floatingLabelBehavior: FloatingLabelBehavior.always,
         hintText: widget.hint,
         hintStyle: TextStyle(
           color: Colors.grey.shade400,
-          fontSize: 13,
+          fontSize: 14,
           fontWeight: FontWeight.normal,
         ),
-        prefixIcon: widget.prefixIcon != null
-            ? Icon(widget.prefixIcon, color: prefixIconColor, size: 20)
-            : null,
 
-        // Use our helper to decide which suffix icon layout to build
+        prefix: widget.prefix,
+        prefixIcon: widget.prefixIcon != null
+            ? Icon(widget.prefixIcon, color: currentIconColor, size: 20)
+            : null,
         suffixIcon: _buildSuffixIcon(),
 
         filled: true,
         fillColor: AppColors.background,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 16,
-        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide(color: Colors.grey.shade300, width: 1.5),

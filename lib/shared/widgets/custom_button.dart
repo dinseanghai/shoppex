@@ -6,7 +6,6 @@ import 'loading_widget.dart';
 enum ButtonType { elevated, filled, tonal, outlined, text, icon }
 
 class CustomButton extends StatelessWidget {
-  // Made text optional (?) so we can omit it safely for iconButton
   final String? text;
   final VoidCallback? onPressed;
   final ButtonType buttontype;
@@ -20,14 +19,14 @@ class CustomButton extends StatelessWidget {
 
   const CustomButton({
     super.key,
-    this.text, // Text is now optional here but guarded by asserts below
+    this.text,
     required this.onPressed,
     this.buttontype = ButtonType.filled,
     this.icon,
     this.iconAlignment = IconAlignment.start,
     this.isLoading = false,
     this.width,
-    this.height = 48.0,
+    this.height = 48.0, // Default height for standard buttons
     this.textWidget,
     this.isBold = false,
   })  : assert(
@@ -89,6 +88,8 @@ class CustomButton extends StatelessWidget {
     return IconButton.styleFrom(
       backgroundColor: AppColors.surface,
       foregroundColor: AppColors.textPrimary,
+      fixedSize: const Size(40.0, 40.0), // Sets default internal style dimensions
+      shape: const CircleBorder(),       // Ensures background clips to a circle
     );
   }
 
@@ -105,7 +106,6 @@ class CustomButton extends StatelessWidget {
     );
 
     // 2. Select the content layer (Default Text vs Custom Widget / Obx)
-    // Safe-checked text fallback to empty string if it's an icon button
     final Widget labelWidget = textWidget ?? Text(text ?? '', style: defaultStyle);
 
     // 3. Modern Loading Indicator integration with explicit style mapping
@@ -140,15 +140,16 @@ class CustomButton extends StatelessWidget {
     }
 
     // 6. Layout Bounds Control
-    // For pure icon buttons, we don't want double.infinity width by default,
-    // so we fall back to matching the height (creating a perfect square/circle).
-    final double defaultWidth = buttontype == ButtonType.icon ? height : double.infinity;
+    // Configures explicit bounds to prevent full-width behavior on pure circular icons
+    final bool isIconButton = buttontype == ButtonType.icon;
+    final double defaultWidth = isIconButton ? (width ?? 40.0) : (width ?? double.infinity);
+    final double finalHeight = isIconButton ? (width ?? 40.0) : height;
 
     return Align(
       alignment: Alignment.topCenter,
       child: SizedBox(
-        width: width ?? defaultWidth,
-        height: height,
+        width: defaultWidth,
+        height: finalHeight,
         child: button,
       ),
     );
@@ -167,7 +168,7 @@ class CustomButton extends StatelessWidget {
       case ButtonType.text:
         return TextButton.icon(onPressed: onPressed, style: style, icon: Icon(icon), label: label, iconAlignment: iconAlignment);
       case ButtonType.icon:
-        return const SizedBox.shrink(); // Handled directly in build layout
+        return const SizedBox.shrink();
     }
   }
 
@@ -178,7 +179,7 @@ class CustomButton extends StatelessWidget {
       case ButtonType.tonal: return FilledButton.tonal(onPressed: onPressed, style: style, child: child);
       case ButtonType.outlined: return OutlinedButton(onPressed: onPressed, style: style, child: child);
       case ButtonType.text: return TextButton(onPressed: onPressed, style: style, child: child);
-      case ButtonType.icon: return const SizedBox.shrink(); // Handled directly in build layout
+      case ButtonType.icon: return const SizedBox.shrink();
     }
   }
 }

@@ -6,6 +6,7 @@ import '../../../data/local/secure_storage.dart';
 import '../../../data/models/login_model.dart';
 import '../../../routes/app_pages.dart';
 import '../../../shared/services/auth_service.dart';
+import '../../../shared/services/network_service.dart';
 import '../../../shared/widgets/snackbars.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
@@ -14,7 +15,6 @@ import 'package:get/get.dart';
 
 class SignInController extends GetxController with FormValidators {
   final _authprovider = Get.find<ApiClient>();
-  final NetworkInfo networkInfo;
 
   // --- Form & Input Elements ---
   final emailController = TextEditingController();
@@ -22,50 +22,50 @@ class SignInController extends GetxController with FormValidators {
 
   // --- Observables ---
   var isPasswordObscured = true.obs;
-  final isOnline = true.obs;
-  var isLoading = false.obs; // Added to manage your CustomButton loading state
+  var isLoading = false.obs;
 
-  StreamSubscription? _networkSubscription;
-
-  SignInController({required this.networkInfo});
+  SignInController();
 
   @override
   void onInit() {
     super.onInit();
-    _checkInitialStatus();
-    _listenToNetworkChanges();
+    // 🔥 FORCE AN IMMEDIATE CONNECTION CHECK WHEN THIS CONTROLLER BEDS IN
+    _checkNetworkOnEntrance();
+  }
+
+  void _checkNetworkOnEntrance() {
+    // Wait until the current framework frame is completed and painted safely
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (Get.isRegistered<NetworkService>()) {
+        // Now it is completely safe to trigger UI state updates and rebuilds!
+        Get.find<NetworkService>().enableBlockerAndCheck();
+      }
+    });
   }
 
   /// Entry point triggered by the CustomButton in your SignInView
-  // 1. CRITICAL: Add the 'async' keyword here
   void handleSignIn(FormState? formState) {
-    // 1. Triggers form validation
     if (formState != null && formState.validate()) {
-
-      // 2. Map form data safely
       final req = LoginReq(
         email: emailController.text.trim(),
         password: passwordController.text,
       );
 
-      // 3. Fire off the authentication API request
-      // (No try-catch or isLoading management needed here anymore!)
       login(req);
     }
   }
 
   void login(LoginReq req) async {
-    // Safety Guard: If it's already fetching, ignore subsequent taps
     if (isLoading.value) return;
 
     try {
-      isLoading.value = true; // 1. Shows progress indicator on CustomButton
+      isLoading.value = true;
 
       final response = await _authprovider.login(req);
 
       if (response.statusCode == 200) {
         final token = response.data['token'];
-        final name = response.data['user']['name'] ?? 'User'; // Grab user's name from response
+        final name = response.data['user']['name'] ?? 'User';
 
         await SecureStorage.write(token);
 
@@ -74,8 +74,6 @@ class SignInController extends GetxController with FormValidators {
 
         Get.offAllNamed(Routes.HOME);
 
-        // 🔥 Call the customized pill snackbar here!
-        Snackbars.showWelcomeBack(name);
         return;
       }
       throw Exception(response.data['message'] ?? 'An unknown error occurred');
@@ -85,7 +83,7 @@ class SignInController extends GetxController with FormValidators {
         middleText: e.toString().replaceFirst("Exception: ", ""),
       );
     } finally {
-      isLoading.value = false; // 2. Hides progress indicator automatically on success or failure
+      isLoading.value = false;
     }
   }
 
@@ -93,41 +91,10 @@ class SignInController extends GetxController with FormValidators {
     isPasswordObscured.value = !isPasswordObscured.value;
   }
 
-  // --- Network Connection Monitoring ---
-  void _checkInitialStatus() async {
-    final status = await networkInfo.isConnected;
-    isOnline.value = status;
-    _handleSnackbar(status);
-  }
-
-  void _listenToNetworkChanges() {
-    _networkSubscription = networkInfo.onStatusChange.listen((status) {
-      isOnline.value = status;
-      _handleSnackbar(status);
-    });
-  }
-
-  void _handleSnackbar(bool status) {
-    if (!status) {
-      if (Get.isSnackbarOpen) return;
-      final failure = NetworkFailure();
-      Snackbars.showNetworkError(failure.message);
-    } else {
-      if (Get.isSnackbarOpen) {
-        Snackbars.closeAll();
-        Snackbars.showSuccess();
-      }
-    }
-  }
-
   @override
   void onClose() {
-    // Clean up text editing streams to prevent context/memory leaks
     emailController.dispose();
     passwordController.dispose();
-
-    // Clean up network background streams
-    _networkSubscription?.cancel();
     super.onClose();
   }
 }

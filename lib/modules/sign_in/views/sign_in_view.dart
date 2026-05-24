@@ -11,13 +11,15 @@ import '../../../shared/widgets/custom_textformfield.dart';
 import '../controllers/sign_in_controller.dart';
 
 class SignInView extends StatelessWidget {
-  const SignInView({super.key}); // Made const since we removed local stateful variables
+  const SignInView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Injecting the controller
     final formKey = GlobalKey<FormState>();
-    final controller = Get.put(SignInController(networkInfo: Get.find()));
+
+    // CLEANED: Instantiated via find() assuming it is initialized in your routing binding.
+    // If you are not using bindings for this specific route, use: Get.put(SignInController());
+    final controller = Get.find<SignInController>();
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -26,7 +28,6 @@ class SignInView extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Form(
-              // Uses the controller's formKey
               key: formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -65,7 +66,7 @@ class SignInView extends StatelessWidget {
                     prefixIcon: Icons.mail_outline_outlined,
                     hint: 'Enter your email',
                     keyboardType: TextInputType.emailAddress,
-                    controller: controller.emailController, // Correct
+                    controller: controller.emailController,
                     validator: controller.validateEmail,
                   ),
                   AppSizes.gapH16,
@@ -98,7 +99,7 @@ class SignInView extends StatelessWidget {
                         buttontype: ButtonType.text,
                         text: 'Forgot Password?',
                         onPressed: () {
-
+                          // Handle forgot password action here
                         },
                       ),
                     ),
@@ -114,7 +115,6 @@ class SignInView extends StatelessWidget {
                       isBold: true,
                       text: 'Sign In',
                       isLoading: controller.isLoading.value,
-                      // FIX: Passing an empty function prevents double-taps without breaking the button's background style
                       onPressed: controller.isLoading.value
                           ? () {}
                           : () => controller.handleSignIn(formKey.currentState),
@@ -145,7 +145,9 @@ class SignInView extends StatelessWidget {
                         style: TextStyle(color: Colors.grey, fontSize: 14),
                       ),
                       GestureDetector(
-                        onTap: () {Get.offNamed(Routes.SIGN_UP);},
+                        onTap: () {
+                          Get.offNamed(Routes.SIGN_UP);
+                        },
                         child: const Text(
                           'Sign Up',
                           style: TextStyle(

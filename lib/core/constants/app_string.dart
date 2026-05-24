@@ -7,7 +7,7 @@ class AppStrings {
 
     // Error Messages
     static const String noConnectionTitle = "No Connection.";
-    static const String noConnectionMessage = "Check Your Internet Connection.";
+    static const String noConnectionMessage = "Searching for network...\nPlease wait while we attempt to reconnect.";
 
     // Success Messages
     static const String backOnlineTitle = "Connected";

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shoppex/routes/app_pages.dart';
+import 'package:shoppex/shared/services/network_overlay.dart';
 import 'package:shoppex/shared/services/network_service.dart';
 import 'flavors.dart';
 import 'localization/app_translations.dart';
@@ -21,6 +22,8 @@ class App extends StatelessWidget {
       initialRoute: AppPages.INITIAL,
       getPages: AppPages.routes,
 
+      // CLEANED: routingCallback completely removed from this layout context
+
       builder: (context, child) {
         final content = child ?? const SizedBox.shrink();
 
@@ -29,44 +32,7 @@ class App extends StatelessWidget {
           show: F.appFlavor == Flavor.dev,
         );
 
-        return Stack(
-          children: [
-            Positioned.fill(child: contentWithBanner),
-
-            // INTERACTION SHIELD GATE
-            Obx(() {
-              final networkService = Get.find<NetworkService>();
-              final isOffline = !networkService.isOnline.value;
-
-              // 1. Find the actual active page route route securely
-              String currentRoute = Get.currentRoute;
-              if (currentRoute.contains('rawSnackbar') || Get.isSnackbarOpen) {
-                currentRoute = Get.previousRoute;
-              }
-
-              // 2. SKIP INTERACTION LOCK FOR ONBOARDING:
-              // If the user is offline, but on onboarding, do not mount the touch shield.
-              if (currentRoute == Routes.ONBOARDING) {
-                return const SizedBox.shrink();
-              }
-
-              if (!isOffline) return const SizedBox.shrink();
-
-              return Positioned.fill(
-                child: AbsorbPointer(
-                  absorbing: true,
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: () {},
-                    child: const DecoratedBox(
-                      decoration: BoxDecoration(color: Colors.transparent),
-                    ),
-                  ),
-                ),
-              );
-            }),
-          ],
-        );
+        return NetworkOverlay(child: contentWithBanner);
       },
     );
   }

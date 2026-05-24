@@ -1,9 +1,7 @@
 import 'dart:async';
 import 'package:get/get.dart';
 import 'package:shoppex/shared/widgets/snackbars.dart';
-import '../../core/errors/failures.dart';
 import '../../core/network/network_info.dart';
-import '../../routes/app_pages.dart';
 
 class NetworkService extends GetxController {
   final NetworkInfo networkInfo = Get.find<NetworkInfo>();
@@ -11,7 +9,9 @@ class NetworkService extends GetxController {
 
   final isOnline = true.obs;
 
-  bool _lastRecordedState = true;
+  // 🔥 NEW SOURCE OF TRUTH: Tells the UI whether it's allowed to show the glass blur
+  final isOverlayAllowed = false.obs;
+
   bool _isShowingSuccessSnackbar = false;
 
   @override
@@ -22,37 +22,28 @@ class NetworkService extends GetxController {
 
   void _listenToNetworkChanges() {
     _networkSubscription = networkInfo.onStatusChange.listen((status) {
-      if (_lastRecordedState == status) return;
-      _lastRecordedState = status;
-
       isOnline.value = status;
-
-      // Calculate route matching variables
-      String realPageRoute = Get.currentRoute;
-      if (realPageRoute.contains('rawSnackbar') || Get.isSnackbarOpen) {
-        realPageRoute = Get.previousRoute;
-      }
-
-      // SKIP SNACKBARS FOR ONBOARDING:
-      // If the route matches onboarding, forcefully close hanging notifications and exit
-      if (realPageRoute == Routes.ONBOARDING) {
-        if (Get.isSnackbarOpen) Snackbars.closeAll();
-        return;
-      }
-
-      // Run alerts normally on all remaining application windows
       _handleSnackbar(status);
     });
+  }
+
+  /// 🔥 FORCE AN IMMEDATE CHECK & UNLOCK TARGET FROM SIGN-IN CONTROLLER
+  void enableBlockerAndCheck() async {
+    // 1. Immediately reveal the overlay layer structure smoothly
+    isOverlayAllowed.value = true;
+
+    // 2. Fetch hardware asset info and update tracking parameters
+    final currentConnection = await networkInfo.isConnected;
+    isOnline.value = currentConnection;
   }
 
   void _handleSnackbar(bool status) {
     if (!status) {
       _isShowingSuccessSnackbar = false;
-      Snackbars.showNetworkError(NetworkFailure().message);
     } else {
       if (_isShowingSuccessSnackbar) return;
 
-      if (Get.isSnackbarOpen) {
+      if (Get.isSnackbarOpen || !isOnline.value) {
         _isShowingSuccessSnackbar = true;
 
         Snackbars.closeAll();

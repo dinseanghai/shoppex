@@ -4,8 +4,8 @@ import 'package:get/get.dart' hide Response;
 import 'package:shoppex/core/config/app_config.dart';
 import 'package:shoppex/core/network/api_endpoints.dart';
 import 'package:shoppex/data/models/login_model.dart';
-import 'package:shoppex/shared/services/auth_service.dart';
-import '../../flavors.dart';
+import '../../data/models/register_model.dart';
+
 
 class ApiClient extends GetxService {
   late Dio _dio;
@@ -42,8 +42,13 @@ class ApiClient extends GetxService {
     return await _dio.post(
       ApiEndpoints.logout,
       options: Options(
-        headers: {'Authorization': 'Bearer $token'}, // ✅ Fixed Header format
+        headers: {'Authorization': 'Bearer $token'},
       ),
     );
   }
+
+  Future<Response<dynamic>> register(RegisterReq req) async {
+    return await _dio.post(ApiEndpoints.register, data: req.toJson());
+  }
 }
+

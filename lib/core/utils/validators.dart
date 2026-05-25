@@ -8,6 +8,13 @@ mixin FormValidators { // <-- Just change 'abstract class' to 'mixin'
     return null;
   }
 
+  String? validateName(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Name is required.';
+    }
+    return null;
+  }
+
   /// Validates a standard email address structure.
   String? validateEmail(String? value) {
     if (value == null || value.trim().isEmpty) {
@@ -54,10 +61,17 @@ mixin FormValidators { // <-- Just change 'abstract class' to 'mixin'
     if (value == null || value.trim().isEmpty) {
       return 'Phone number is required.';
     }
-    final phoneRegex = RegExp(r'^\+?[0-9]{7,15}$');
-    if (!phoneRegex.hasMatch(value.trim())) {
-      return 'Please enter a valid phone number.';
+
+    // 1. Strip out the formatting spaces inserted by PhoneFormatter
+    final cleanValue = value.replaceAll(' ', '');
+
+    // 2. Validate against raw digits (8 or 9 digits based on your formatter)
+    final phoneRegex = RegExp(r'^[0-9]{8,9}$');
+
+    if (!phoneRegex.hasMatch(cleanValue)) {
+      return 'Please enter a valid 8 or 9 digit phone number.';
     }
+
     return null;
   }
 }

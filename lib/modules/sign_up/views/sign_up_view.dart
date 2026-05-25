@@ -16,7 +16,7 @@ class SignUpView extends GetView<SignUpController> {
   const SignUpView({super.key});
   @override
   Widget build(BuildContext context) {
-    final formKey = GlobalKey<FormState>();
+    //final formKey = GlobalKey<FormState>();
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -42,7 +42,7 @@ class SignUpView extends GetView<SignUpController> {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             child: Form(
-              key: formKey,
+              key: controller.formKey,
               child: Column(
                 children: [
                   CustomFormField(
@@ -52,6 +52,7 @@ class SignUpView extends GetView<SignUpController> {
                     label: 'Full Name',
                     hint: 'Enter your Full Name',
                     showCheckmarkOnInput: true,
+                    validator: controller.validateName,
                   ),
                   AppSizes.gapH20,
                   CustomFormField(
@@ -61,6 +62,7 @@ class SignUpView extends GetView<SignUpController> {
                     label: 'Email Address',
                     hint: 'Enter your Email Address',
                     showCheckmarkOnInput: true,
+                    validator: controller.validateEmail,
                   ),
                   AppSizes.gapH20,
                   CustomFormField(
@@ -68,6 +70,7 @@ class SignUpView extends GetView<SignUpController> {
                     keyboardType: TextInputType.phone,
                     label: 'Phone Number',
                     hint: 'Enter Your Phone Number',
+                    validator: controller.validatePhone,
                     inputFormatters: [
                       FilteringTextInputFormatter.digitsOnly,
                       PhoneFormatter(), // Custom formatter from earlier response
@@ -119,6 +122,7 @@ class SignUpView extends GetView<SignUpController> {
                       isPassword: controller.isPasswordObscured.value,
                       keyboardType: TextInputType.visiblePassword,
                       controller: controller.passwordController,
+                      validator: controller.validatePassword,
                       suffixIcon: IconButton(
                         icon: Icon(
                           controller.isPasswordObscured.value
@@ -143,6 +147,10 @@ class SignUpView extends GetView<SignUpController> {
                       isPassword: controller.isPasswordObscured.value,
                       keyboardType: TextInputType.visiblePassword,
                       controller: controller.confirmPassController,
+                      validator: (val) => controller.validateConfirmPassword(
+                        val,
+                        controller.passwordController.text,
+                      ),
                       suffixIcon: IconButton(
                         icon: Icon(
                           controller.isPasswordObscured.value
@@ -154,84 +162,120 @@ class SignUpView extends GetView<SignUpController> {
                     ),
                   ),
                   AppSizes.gapH20,
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start, // Aligns checkbox with the top line of text
-                      children: [
-                        // 1. Reactive Checkbox
-                        Obx(
-                              () => SizedBox(
-                            height: 24,
-                            width: 24,
-                            child: Checkbox(
-                              value: controller.isAgreed.value,
-                              onChanged: controller.toggleAgreement,
-                              activeColor: Colors.blueAccent, // Matches the blue in your image
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20), // Slightly rounded corners
-                              ),
-                            ),
-                          ),
+                  // Replace your old terms agreement padding block with this:
+                  FormField<bool>(
+                    initialValue: controller.isAgreed.value,
+                    validator: (value) {
+                      if (controller.isAgreed.value == false) {
+                        return 'You must agree to the Terms and Privacy Policy';
+                      }
+                      return null;
+                    },
+                    builder: (FormFieldState<bool> state) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0,
+                          vertical: 8.0,
                         ),
-                        const SizedBox(width: 12), // Space between checkbox and text
-
-                        // 2. Rich Text with Clickable Links
-                        Expanded(
-                          child: RichText(
-                            text: TextSpan(
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Colors.black87, // Main text color
-                                height: 1.4,          // Line spacing matching the image
-                              ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const TextSpan(text: "I agree to the "),
-
-                                // Terms of Service Link
-                                TextSpan(
-                                  text: "Terms of Service",
-                                  style: const TextStyle(
-                                    color: Colors.blueAccent,
-                                    decoration: TextDecoration.underline,
+                                // Reactive Checkbox
+                                Obx(
+                                      () => SizedBox(
+                                    height: 24,
+                                    width: 24,
+                                    child: Checkbox(
+                                      value: controller.isAgreed.value,
+                                      onChanged: (bool? checked) {
+                                        controller.toggleAgreement(checked);
+                                        // This updates the FormField status in real-time
+                                        state.didChange(checked);
+                                      },
+                                      // Changes border color to red if there is a validation error
+                                      side: const BorderSide(color: Colors.grey, width: 2),
+                                      activeColor: Colors.blueAccent,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(20), // 4 matches your rounded style
+                                      ),
+                                    ),
                                   ),
-                                  recognizer: TapGestureRecognizer()
-                                    ..onTap = () {
-                                      // Handle Terms of Service click
-                                      print("Navigate to Terms of Service");
-                                    },
                                 ),
-
-                                const TextSpan(text: " and "),
-
-                                // Privacy Policy Link
-                                TextSpan(
-                                  text: "Privacy Policy",
-                                  style: const TextStyle(
-                                    color: Colors.blueAccent,
-                                    decoration: TextDecoration.underline,
+                                const SizedBox(width: 12),
+                                // Rich Text with Clickable Links
+                                Expanded(
+                                  child: RichText(
+                                    text: TextSpan(
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.black87,
+                                        height: 1.4,
+                                      ),
+                                      children: [
+                                        const TextSpan(text: "I agree to the "),
+                                        TextSpan(
+                                          text: "Terms of Service",
+                                          style: const TextStyle(
+                                            color: Colors.blueAccent,
+                                            decoration: TextDecoration.underline,
+                                          ),
+                                          recognizer: TapGestureRecognizer()
+                                            ..onTap = () {
+                                              print("Navigate to Terms of Service");
+                                            },
+                                        ),
+                                        const TextSpan(text: " and "),
+                                        TextSpan(
+                                          text: "Privacy Policy",
+                                          style: const TextStyle(
+                                            color: Colors.blueAccent,
+                                            decoration: TextDecoration.underline,
+                                          ),
+                                          recognizer: TapGestureRecognizer()
+                                            ..onTap = () {
+                                              print("Navigate to Privacy Policy");
+                                            },
+                                        ),
+                                        const TextSpan(text: " of ShopeeX marketplace."),
+                                      ],
+                                    ),
                                   ),
-                                  recognizer: TapGestureRecognizer()
-                                    ..onTap = () {
-                                      // Handle Privacy Policy click
-                                      print("Navigate to Privacy Policy");
-                                    },
                                 ),
-
-                                const TextSpan(text: " of ShopeeX marketplace."),
                               ],
                             ),
-                          ),
+
+                            // 3. The Red Error Text Alert
+                            if (state.hasError)
+                              Padding(
+                                padding: const EdgeInsets.only(left: 36.0, top: 6.0), // Aligns nicely underneath the text
+                                child: Text(
+                                  state.errorText ?? '',
+                                  style: const TextStyle(
+                                    color: Color(0xFFB00020),
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
-                      ],
-                    ),
+                      );
+                    },
                   ),
                   AppSizes.gapH20,
-                  CustomButton(
-                    buttontype: ButtonType.elevated,
+                  Obx(
+                        () => CustomButton(
+                      buttontype: ButtonType.elevated,
                       text: 'Continue',
                       isBold: true,
-                      onPressed: (){}),
+                      isLoading: controller.isLoading.value, // Now this will update reactively!
+                      onPressed: controller.isLoading.value
+                          ? () {} // Do nothing while loading
+                          : () => controller.handleSignUp(controller.formKey.currentState),
+                    ),
+                  ),
                   AppSizes.gapH20,
                   const Row(
                     children: [
@@ -258,7 +302,9 @@ class SignUpView extends GetView<SignUpController> {
                       ),
                       GestureDetector(
                         onTap: () {
-                          Get.offNamed(Routes.SIGNIN); //  This replaces the screen and kills the duplicate key
+                          Get.offNamed(
+                            Routes.SIGNIN,
+                          ); //  This replaces the screen and kills the duplicate key
                         },
                         child: const Text(
                           'Sign In',

@@ -1,14 +1,10 @@
-import '../../../core/errors/failures.dart';
 import '../../../core/network/api_client.dart';
-import '../../../core/network/network_info.dart';
 import '../../../core/utils/validators.dart';
 import '../../../data/local/secure_storage.dart';
 import '../../../data/models/login_model.dart';
 import '../../../routes/app_pages.dart';
 import '../../../shared/services/auth_service.dart';
 import '../../../shared/services/network_service.dart';
-import '../../../shared/widgets/snackbars.dart';
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

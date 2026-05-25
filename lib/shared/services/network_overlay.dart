@@ -46,7 +46,7 @@ class NetworkOverlay extends StatelessWidget {
                       child: BackdropFilter(
                         filter: ImageFilter.blur(sigmaX: 6.0, sigmaY: 6.0),
                         child: Container(
-                          color: const Color(0xFF0D1B2A).withOpacity(0.3), // Dark blue/gray tint
+                          color: const Color(0xFF0D1B2A).withOpacity(0.4), // Dark blue/gray tint
                         ),
                       ),
                     ),
@@ -63,7 +63,7 @@ class NetworkOverlay extends StatelessWidget {
                               width: double.infinity,
                               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF146BCA).withOpacity(0.3), // Premium sapphire blue frost blend
+                                color: const Color(0xFF146BCA).withOpacity(0.2), // Premium sapphire blue frost blend
                                 borderRadius: BorderRadius.circular(24),
                                 border: Border.all(
                                   color: Colors.white.withOpacity(0.15), // Crisp highlight edge border
@@ -113,7 +113,7 @@ class NetworkOverlay extends StatelessWidget {
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: 15,
+                                      fontSize: 13,
                                       fontWeight: FontWeight.w400,
                                       height: 1.4,
                                       decoration: TextDecoration.none,

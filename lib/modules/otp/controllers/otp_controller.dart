@@ -21,9 +21,12 @@ class OtpVerificationController extends GetxController {
   );
 
   var isLoading = false.obs;
-  var isResendSeconds = 59.obs; // This controls the resend button cooldown
+  var isResendSeconds = 59.obs; // Controls the resend button cooldown
   var canResend = false.obs;
   Timer? _timer;
+
+  // CRITICAL FIX: Guard flag to block auto-submit during programatic wipes
+  bool isClearing = false;
 
   @override
   void onInit() {
@@ -34,7 +37,7 @@ class OtpVerificationController extends GetxController {
     startCountdown();
   }
 
-  // The local timer only controls the "Resend Code" delay
+  // Controls the "Resend Code" delay
   void startCountdown() {
     canResend.value = false;
     isResendSeconds.value = 59;
@@ -43,21 +46,28 @@ class OtpVerificationController extends GetxController {
       if (isResendSeconds.value > 0) {
         isResendSeconds.value--;
       } else {
-        // Once this hits 0, the user is allowed to tap "Resend Code"
         canResend.value = true;
         _timer?.cancel();
       }
     });
   }
 
-  // Helper method to completely clear input boxes and return focus to the first digit
+  // Safely clear input boxes and return focus to the first digit
   void clearOtpFieldsAndFocus() {
+    isClearing = true; // Lock auto-verification triggers completely
+
     for (var controller in controllers) {
       controller.clear();
     }
+
     if (focusNodes.isNotEmpty) {
-      focusNodes[0].requestFocus(); // Soft keyboard focuses back on box 1
+      focusNodes[0].requestFocus(); // Reset focus to cell #1
     }
+
+    // A 150ms buffer completely covers all cascading text selection events safely
+    Future.delayed(const Duration(milliseconds: 150), () {
+      isClearing = false;
+    });
   }
 
   // Concatenate all 6 individual box fields into one string
@@ -103,22 +113,35 @@ class OtpVerificationController extends GetxController {
           barrierDismissible: false,
         );
 
-        await Future.delayed(const Duration(seconds: 3));
+        await Future.delayed(const Duration(seconds: 2));
         Get.back();
 
+        // FIX: Pass the valid local challengeId instead of response.data['challenge_id']
         Get.offAllNamed(
           Routes.SIGNIN,
-          arguments: {'challenge_id': response.data['challenge_id']},
+          arguments: {'challenge_id': challengeId},
         );
         return;
       }
+
       throw Exception(response.data?['message'] ?? 'Verification failed');
+
     } catch (e) {
-      // --- SERVER DETECTED EXPIRATION/ERROR ---
-      // If the backend returns an error (e.g. 10-minute expiry or bad code),
-      // clear the fields, show the snackbar, and reset focus.
       clearOtpFieldsAndFocus();
-      Snackbars.optexpired();
+
+      final errorMessage = e.toString().toLowerCase();
+
+      // Now this will only trigger if the backend explicitly returns an expiration message
+      if (errorMessage.contains('expire')) {
+        Get.snackbar(
+          'Expired',
+          'The OTP has expired. Please request a new code.',
+          backgroundColor: Colors.redAccent,
+          colorText: Colors.white,
+        );
+      } else {
+        Snackbars.invalidotp();
+      }
     } finally {
       isLoading.value = false;
     }
@@ -137,11 +160,9 @@ class OtpVerificationController extends GetxController {
           challengeId = response.data['challenge_id'].toString();
         }
 
-        // USER CLICKED RESEND: Wipe out whatever was in the boxes and autofocus digit 1
         clearOtpFieldsAndFocus();
-
         Get.snackbar('Success', 'A new verification code has been sent!');
-        startCountdown(); // Restart local button timer delay
+        startCountdown();
       } else {
         throw Exception(response.data?['message'] ?? 'Failed to resend code');
       }

@@ -70,6 +70,23 @@ class Snackbars {
     });
   }
 
+  static void invalidotp() {
+    closeAll();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Get.rawSnackbar(
+        title: 'Error',
+        message: 'The OTP is Invalid',
+        backgroundColor: AppColors.textSecondary,
+        snackPosition: SnackPosition.TOP,
+        overlayBlur: 0,
+        duration: const Duration(seconds: 3),
+        margin: const EdgeInsets.all(10),
+        borderRadius: 15,
+      );
+    });
+  }
+
   static void optexpired() {
     closeAll();
 

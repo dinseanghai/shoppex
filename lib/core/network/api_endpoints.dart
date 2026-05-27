@@ -4,4 +4,6 @@ class ApiEndpoints {
   static String get login => '${AppConfig.baseUrl}/api/v1/auth/login';
   static String get register => '${AppConfig.baseUrl}/api/v1/auth/register';
   static String get logout => '${AppConfig.baseUrl}/api/v1/auth/logout';
+  static String get otp => '${AppConfig.baseUrl}/api/v1/auth/verify-otp';
+  static String get resendotp => '${AppConfig.baseUrl}/api/v1/auth/resend-otp';
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shoppex/core/constants/app_colors.dart';
 import '../../core/constants/app_string.dart';
 
 
@@ -34,4 +35,56 @@ class Snackbars {
       );
     });
   }
+
+  static void verifyOtp() {
+    closeAll();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Get.rawSnackbar(
+        title: 'Error',
+        message: AppStrings.otpdigits,
+        backgroundColor: Colors.yellow,
+        snackPosition: SnackPosition.TOP,
+        overlayBlur: 0,
+        duration: const Duration(seconds: 3),
+        margin: const EdgeInsets.all(10),
+        borderRadius: 15,
+      );
+    });
+  }
+
+  static void resendotp() {
+    closeAll();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Get.rawSnackbar(
+        title: 'Success',
+        message: AppStrings.resendotp,
+        backgroundColor: AppColors.textSecondary,
+        snackPosition: SnackPosition.TOP,
+        overlayBlur: 0,
+        duration: const Duration(seconds: 3),
+        margin: const EdgeInsets.all(10),
+        borderRadius: 15,
+      );
+    });
+  }
+
+  static void optexpired() {
+    closeAll();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Get.rawSnackbar(
+        title: 'Code Expired',
+        message: AppStrings.optexpired,
+        backgroundColor: AppColors.textSecondary,
+        snackPosition: SnackPosition.TOP,
+        overlayBlur: 0,
+        duration: const Duration(seconds: 3),
+        margin: const EdgeInsets.all(10),
+        borderRadius: 15,
+      );
+    });
+  }
+
 }

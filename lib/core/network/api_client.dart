@@ -4,7 +4,9 @@ import 'package:get/get.dart' hide Response;
 import 'package:shoppex/core/config/app_config.dart';
 import 'package:shoppex/core/network/api_endpoints.dart';
 import 'package:shoppex/data/models/login_model.dart';
+import '../../data/models/otp_model.dart';
 import '../../data/models/register_model.dart';
+import '../../data/models/resent_otp_model.dart';
 
 
 class ApiClient extends GetxService {
@@ -50,5 +52,14 @@ class ApiClient extends GetxService {
   Future<Response<dynamic>> register(RegisterReq req) async {
     return await _dio.post(ApiEndpoints.register, data: req.toJson());
   }
+
+  Future<Response<dynamic>> verifyOtp(OtpReg req) async {
+    return await _dio.post(ApiEndpoints.otp, data: req.toJson());
+  }
+
+  Future<Response<dynamic>> resendOtp(ResendOtpReg req) async {
+    return await _dio.post(ApiEndpoints.resendotp, data: req.toJson());
+  }
+
 }
 

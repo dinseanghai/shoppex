@@ -107,11 +107,12 @@ class SignUpController extends GetxController with FormValidators {
         );
 
         // 2. Wait for 3 seconds so the user can actually see the snackbar
-        await Future.delayed(const Duration(seconds: 3));
+        await Future.delayed(const Duration(seconds: 2));
 
-        // 3. Route to the OTP Verification screen
-        // Replace Routes.OTP with your actual OTP route name
-        //Get.offAllNamed(Routes.OTP);
+
+        Get.offAllNamed(Routes.OTP,arguments: {
+          'challenge_id': response.data['challenge_id'], // Ensure this key matches exactly!
+        },);
 
       } else {
         // Fixed: Move the throw inside an 'else' block so it doesn't interrupt success

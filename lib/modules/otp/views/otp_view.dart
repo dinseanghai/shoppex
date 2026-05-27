@@ -94,7 +94,7 @@ class OtpVerificationView extends GetView<OtpVerificationController> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: List.generate(
                         6,
-                        (index) => _buildOtpBox(index),
+                            (index) => _buildOtpBox(index),
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -102,59 +102,61 @@ class OtpVerificationView extends GetView<OtpVerificationController> {
                     // Timer & Resend Section
                     Center(
                       child: Obx(
-                        () => Column(
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                            () =>
+                            Column(
                               children: [
-                                const Icon(
-                                  Icons.access_time,
-                                  size: 16,
-                                  color: Colors.grey,
-                                ),
-                                const SizedBox(width: 6),
-                                const Text(
-                                  "Resend code in ",
-                                  style: TextStyle(color: Colors.grey),
-                                ),
-                                Text(
-                                  "00:${controller.isResendSeconds.value.toString().padLeft(2, '0')}",
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Text(
-                                  "Didn't receive the code? ",
-                                  style: TextStyle(
-                                    color: Colors.grey,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                                GestureDetector(
-                                  onTap: controller.canResend.value
-                                      ? () => controller.resendOtpCode()
-                                      : null,
-                                  child: Text(
-                                    "Resend Code",
-                                    style: TextStyle(
-                                      color: controller.canResend.value
-                                          ? AppColors.buttonPrimary
-                                          : Colors.grey.shade400,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 13,
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(
+                                      Icons.access_time,
+                                      size: 16,
+                                      color: Colors.grey,
                                     ),
-                                  ),
+                                    const SizedBox(width: 6),
+                                    const Text(
+                                      "Resend code in ",
+                                      style: TextStyle(color: Colors.grey),
+                                    ),
+                                    Text(
+                                      "00:${controller.isResendSeconds.value
+                                          .toString().padLeft(2, '0')}",
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Text(
+                                      "Didn't receive the code? ",
+                                      style: TextStyle(
+                                        color: Colors.grey,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                    GestureDetector(
+                                      onTap: controller.canResend.value
+                                          ? () => controller.resendOtpCode()
+                                          : null,
+                                      child: Text(
+                                        "Resend Code",
+                                        style: TextStyle(
+                                          color: controller.canResend.value
+                                              ? AppColors.buttonPrimary
+                                              : Colors.grey.shade400,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
-                          ],
-                        ),
                       ),
                     ),
                   ],
@@ -165,17 +167,18 @@ class OtpVerificationView extends GetView<OtpVerificationController> {
 
               // --- VERIFY BUTTON ---
               Obx(
-                () => CustomButton(
-                  buttontype: ButtonType.elevated,
-                  iconAlignment: IconAlignment.start,
-                  icon: Icons.verified_user_outlined,
-                  text: 'Verify',
-                  isBold: true,
-                  isLoading: controller.isLoading.value,
-                  onPressed: controller.isLoading.value
-                      ? null
-                      : () => controller.verifyOtp(),
-                ),
+                    () =>
+                    CustomButton(
+                      buttontype: ButtonType.elevated,
+                      iconAlignment: IconAlignment.start,
+                      icon: Icons.verified_user_outlined,
+                      text: 'Verify',
+                      isBold: true,
+                      isLoading: controller.isLoading.value,
+                      onPressed: controller.isLoading.value
+                          ? null
+                          : () => controller.verifyOtp(),
+                    ),
               ),
 
               AppSizes.gapH48,
@@ -209,69 +212,62 @@ class OtpVerificationView extends GetView<OtpVerificationController> {
 
   Widget _buildOtpBox(int index) {
     return SizedBox(
-      width: 40,
-      height: 50,
-      child: KeyboardListener(
-        // Detects backspace even if the current field is already empty
-        focusNode: FocusNode(),
-        onKeyEvent: (event) {
-          if (event is KeyDownEvent &&
-              event.logicalKey == LogicalKeyboardKey.backspace &&
-              controller.controllers[index].text.isEmpty &&
-              index > 0) {
-            controller.focusNodes[index - 1].requestFocus();
+      width: 45,
+      height: 55,
+      child: TextField(
+        controller: controller.controllers[index],
+        focusNode: controller.focusNodes[index],
+        textAlign: TextAlign.center,
+        keyboardType: TextInputType.number,
+        inputFormatters: [
+          FilteringTextInputFormatter.digitsOnly,
+          LengthLimitingTextInputFormatter(1),
+        ],
+        maxLength: 1,
+        style: const TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+          color: AppColors.buttonPrimary,
+        ),
+// --- CAPTURE BACKSPACE AND TYPING CLEANLY HERE ---
+        onChanged: (value) {
+          if (controller.isClearing || controller.isLoading.value) return;
+
+          if (value.isNotEmpty) {
+// Move forward if typing a digit
+            if (index < 5) {
+              controller.focusNodes[index + 1].requestFocus();
+            } else if (index == 5) {
+              FocusManager.instance.primaryFocus?.unfocus();
+
+// Auto-submit on 6th digit
+              Future.delayed(Duration.zero, () {
+                if (controller.completeOtp.length == 6 &&
+                    !controller.isClearing) {
+                  controller.verifyOtp();
+                }
+              });
+            }
+          } else {
+// Move backward if deleting text
+            if (index > 0 && !controller.isClearing) {
+              controller.focusNodes[index - 1].requestFocus();
+            }
           }
         },
-        child: TextField(
-          controller: controller.controllers[index],
-          focusNode: controller.focusNodes[index],
-          onChanged: (value) {
-            if (value.isNotEmpty) {
-              // Move focus to the next box if available
-              if (index < 5) {
-                controller.focusNodes[index + 1].requestFocus();
-              } else if (index == 5) {
-                // 6th box filled: Close keyboard and run check safely
-                FocusManager.instance.primaryFocus?.unfocus();
-
-                // Short delay guarantees all controllers have updated text states
-                Future.delayed(Duration.zero, () {
-                  controller.verifyOtp();
-                });
-              }
-            } else {
-              // Move focus to the previous box when deleting a character
-              if (index > 0) {
-                controller.focusNodes[index - 1].requestFocus();
-              }
-            }
-          },
-          textAlign: TextAlign.center,
-          keyboardType: TextInputType.number,
-          inputFormatters: [
-            FilteringTextInputFormatter.digitsOnly, // Only allow numbers
-          ],
-          maxLength: 1,
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: AppColors.buttonPrimary,
+        decoration: InputDecoration(
+          counterText: "",
+          contentPadding: EdgeInsets.zero,
+          enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.grey.shade300, width: 1.5),
+            borderRadius: BorderRadius.circular(12),
           ),
-          decoration: InputDecoration(
-            counterText: "",
-            contentPadding:
-                EdgeInsets.zero, // Centers text perfectly vertically
-            enabledBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.grey.shade300, width: 1.5),
-              borderRadius: BorderRadius.circular(12),
+          focusedBorder: OutlineInputBorder(
+            borderSide: const BorderSide(
+              color: AppColors.buttonPrimary,
+              width: 2,
             ),
-            focusedBorder: OutlineInputBorder(
-              borderSide: const BorderSide(
-                color: AppColors.buttonPrimary,
-                width: 2,
-              ),
-              borderRadius: BorderRadius.circular(12),
-            ),
+            borderRadius: BorderRadius.circular(12),
           ),
         ),
       ),

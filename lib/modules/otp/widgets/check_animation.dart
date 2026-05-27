@@ -41,7 +41,7 @@ class _SuccessCheckAnimationState extends State<SuccessCheckAnimation> with Sing
       child: const Icon(
         Icons.check_circle,
         color: Colors.green,
-        size: 72,
+        size: 62,
       ),
     );
   }

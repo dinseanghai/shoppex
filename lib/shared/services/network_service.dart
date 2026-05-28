@@ -55,7 +55,7 @@ class NetworkService extends GetxController {
       _isShowingSuccessSnackbar = true;
 
       Snackbars.closeAll();
-      Snackbars.showSuccess();
+      Snackbars.showBackOnline();
 
       Future.delayed(const Duration(seconds: 3), () {
         _isShowingSuccessSnackbar = false;

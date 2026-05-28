@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:shoppex/data/models/register_model.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/utils/validators.dart';
+import '../../../data/models/request/register_model.dart';
 import '../../../routes/app_pages.dart';
 
 class SignUpController extends GetxController with FormValidators {

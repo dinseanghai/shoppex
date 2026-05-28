@@ -99,7 +99,7 @@ class SignInView extends StatelessWidget {
                         buttontype: ButtonType.text,
                         text: 'Forgot Password?',
                         onPressed: () {
-                          // Handle forgot password action here
+                          Get.offAllNamed(Routes.FORGET_PASSWORD);
                         },
                       ),
                     ),

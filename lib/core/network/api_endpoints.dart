@@ -6,4 +6,6 @@ class ApiEndpoints {
   static String get logout => '${AppConfig.baseUrl}/api/v1/auth/logout';
   static String get otp => '${AppConfig.baseUrl}/api/v1/auth/verify-otp';
   static String get resendotp => '${AppConfig.baseUrl}/api/v1/auth/resend-otp';
+  static String get forgetpassword  => '${AppConfig.baseUrl}/api/v1/auth/forgot-password';
+  static String get resetpassword => '${AppConfig.baseUrl}/api/v1/auth/reset-password';
 }

@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Response;
 import 'package:shoppex/core/config/app_config.dart';
 import 'package:shoppex/core/network/api_endpoints.dart';
-import 'package:shoppex/data/models/login_model.dart';
-import '../../data/models/otp_model.dart';
-import '../../data/models/register_model.dart';
-import '../../data/models/resent_otp_model.dart';
+import 'package:shoppex/data/models/request/login_model.dart';
+import 'package:shoppex/data/models/request/reset_password.dart';
+import '../../data/models/request/forget_password.dart';
+import '../../data/models/request/otp_model.dart';
+import '../../data/models/request/register_model.dart';
+import '../../data/models/request/resent_otp_model.dart';
 
 
 class ApiClient extends GetxService {
@@ -59,6 +61,14 @@ class ApiClient extends GetxService {
 
   Future<Response<dynamic>> resendOtp(ResendOtpReg req) async {
     return await _dio.post(ApiEndpoints.resendotp, data: req.toJson());
+  }
+
+  Future<Response<dynamic>> forgetpassword(ForgetPasswordReg reg) async{
+    return await _dio.post(ApiEndpoints.forgetpassword, data: reg.toJson());
+  }
+
+  Future<Response<dynamic>> resetpassword(ResetPasswordReg req) async {
+    return await _dio.post(ApiEndpoints.resetpassword, data: req.toJson());
   }
 
 }

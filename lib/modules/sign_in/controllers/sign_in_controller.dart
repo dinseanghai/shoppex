@@ -1,7 +1,7 @@
 import '../../../core/network/api_client.dart';
 import '../../../core/utils/validators.dart';
 import '../../../data/local/secure_storage.dart';
-import '../../../data/models/login_model.dart';
+import '../../../data/models/request/login_model.dart';
 import '../../../routes/app_pages.dart';
 import '../../../shared/services/auth_service.dart';
 import '../../../shared/services/network_service.dart';

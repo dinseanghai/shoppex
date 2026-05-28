@@ -4,6 +4,7 @@ class AppStrings {
     // Auth
     static const String loginTitle = "Welcome Back";
     static const String loginSubtitle = "Please sign in to continue";
+    static const String forgotpassword = "Enter the email address associated with your account, and we\'ll send you OTP to reset it.";
 
     // Error Messages
     static const String noConnectionTitle = "No Connection.";

@@ -13,99 +13,210 @@ class OtpVerificationController extends GetxController {
 
   String challengeId = '';
 
-  // 6 individual FocusNodes and TextControllers for pin handling
-  final List<FocusNode> focusNodes = List.generate(6, (index) => FocusNode());
-  final List<TextEditingController> controllers = List.generate(
-    6,
-        (index) => TextEditingController(),
-  );
+  // =========================================================
+  // OTP INPUTS
+  // =========================================================
+
+  final List<FocusNode> focusNodes =
+  List.generate(6, (_) => FocusNode());
+
+  final List<TextEditingController> controllers =
+  List.generate(6, (_) => TextEditingController());
+
+  // =========================================================
+  // STATES
+  // =========================================================
 
   var isLoading = false.obs;
-  var isResendSeconds = 59.obs; // Controls the resend button cooldown
+
+  var isResendSeconds = 59.obs;
+
   var canResend = false.obs;
+
+  bool isVerifying = false;
+
+  /// Ignore first autofill after resend
+  bool ignoreNextAutoFill = false;
+
   Timer? _timer;
 
-  // CRITICAL FIX: Guard flag to block auto-submit during programatic wipes
-  bool isClearing = false;
+  // =========================================================
+  // INIT
+  // =========================================================
 
   @override
   void onInit() {
     super.onInit();
-    if (Get.arguments != null && Get.arguments is Map) {
-      challengeId = Get.arguments['challenge_id'] ?? '';
-    }
-    startCountdown();
-  }
 
-  // Controls the "Resend Code" delay
-  void startCountdown() {
-    canResend.value = false;
-    isResendSeconds.value = 59;
-    _timer?.cancel();
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (isResendSeconds.value > 0) {
-        isResendSeconds.value--;
-      } else {
-        canResend.value = true;
-        _timer?.cancel();
+    if (Get.arguments != null &&
+        Get.arguments is Map) {
+      challengeId =
+          Get.arguments['challenge_id'] ?? '';
+    }
+
+    startCountdown();
+
+    // AUTO FOCUS FIRST OTP BOX
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (focusNodes.isNotEmpty) {
+        focusNodes.first.requestFocus();
       }
     });
   }
 
-  // Safely clear input boxes and return focus to the first digit
-  void clearOtpFieldsAndFocus() {
-    isClearing = true; // Lock auto-verification triggers completely
+  // =========================================================
+  // TIMER
+  // =========================================================
 
-    for (var controller in controllers) {
-      controller.clear();
-    }
+  void startCountdown() {
+    canResend.value = false;
 
-    if (focusNodes.isNotEmpty) {
-      focusNodes[0].requestFocus(); // Reset focus to cell #1
-    }
+    isResendSeconds.value = 59;
 
-    // A 150ms buffer completely covers all cascading text selection events safely
-    Future.delayed(const Duration(milliseconds: 150), () {
-      isClearing = false;
-    });
+    _timer?.cancel();
+
+    _timer = Timer.periodic(
+      const Duration(seconds: 1),
+          (timer) {
+        if (isResendSeconds.value > 0) {
+          isResendSeconds.value--;
+        } else {
+          canResend.value = true;
+          timer.cancel();
+        }
+      },
+    );
   }
 
-  // Concatenate all 6 individual box fields into one string
-  String get completeOtp => controllers.map((c) => c.text).join();
+  // =========================================================
+  // OTP HELPERS
+  // =========================================================
 
-  void verifyOtp() async {
-    if (completeOtp.length < 6) {
+  String get completeOtp =>
+      controllers.map((e) => e.text).join();
+
+  bool get isOtpComplete =>
+      completeOtp.length == 6;
+
+  // =========================================================
+  // OTP FIELD CHANGED
+  // =========================================================
+
+  void onOtpChanged({
+    required int index,
+    required String value,
+  }) {
+    if (isLoading.value) return;
+
+    // --- FIX FOR OS AUTOFILL SPLITTING TENDENCIES ---
+    // If someone autofills, a single box might suddenly get all 6 digits.
+    if (value.length == 6) {
+      for (int i = 0; i < 6; i++) {
+        controllers[i].text = value[i];
+      }
+      FocusManager.instance.primaryFocus?.unfocus();
+      verifyOtp();
+      return;
+    }
+
+    // Move next field
+    if (value.isNotEmpty) {
+      if (index < 5) {
+        focusNodes[index + 1].requestFocus();
+      }
+    }
+    // Backspace to previous field
+    else {
+      if (index > 0) {
+        focusNodes[index - 1].requestFocus();
+      }
+    }
+
+    // Last field interaction
+    if (index == 5 && value.isNotEmpty) {
+      FocusManager.instance.primaryFocus?.unfocus();
+
+      Future.delayed(
+        const Duration(milliseconds: 100),
+            () {
+          final otp = controllers.map((e) => e.text).join();
+
+          // Incomplete code string: do nothing
+          if (otp.length != 6) return;
+
+          // --- FIXED LOGIC ---
+          // 'ignoreNextAutoFill' should ONLY block the immediate OS popup trigger.
+          // If the value length is 1, the user typed this manually. Do NOT block it!
+          if (ignoreNextAutoFill && value.length != 1) {
+            ignoreNextAutoFill = false;
+            return;
+          }
+
+          // Clean up flag now that typing/autofill resolved successfully
+          ignoreNextAutoFill = false;
+
+          verifyOtp();
+        },
+      );
+    }
+  }
+
+  // =========================================================
+  // VERIFY OTP
+  // =========================================================
+
+  Future<void> verifyOtp() async {
+    if (isVerifying) return;
+
+    if (!isOtpComplete) {
       Snackbars.verifyOtp();
       return;
     }
 
-    if (isLoading.value) return;
-
     try {
-      isLoading.value = true;
-      final req = OtpReg(challengeId: challengeId, otp: completeOtp);
-      final response = await _provider.verifyOtp(req);
+      isVerifying = true;
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
+      isLoading.value = true;
+
+      final req = OtpReg(
+        challengeId: challengeId,
+        otp: completeOtp,
+      );
+
+      final response =
+      await _provider.verifyOtp(req);
+
+      if (response.statusCode == 200 ||
+          response.statusCode == 201) {
         Get.dialog(
           AlertDialog(
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius:
+              BorderRadius.circular(16),
             ),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 SuccessCheckAnimation(),
+
                 const SizedBox(height: 16),
+
                 const Text(
                   "Verification Successful!",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
                 ),
+
                 const SizedBox(height: 8),
+
                 Text(
                   "Redirecting you to Signin...",
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.grey[600]),
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                  ),
                 ),
               ],
             ),
@@ -113,46 +224,72 @@ class OtpVerificationController extends GetxController {
           barrierDismissible: false,
         );
 
-        await Future.delayed(const Duration(seconds: 2));
-        Get.back();
+        await Future.delayed(
+          const Duration(seconds: 2),
+        );
 
-        // FIX: Pass the valid local challengeId instead of response.data['challenge_id']
+        if (Get.isDialogOpen ?? false) {
+          Get.back();
+        }
+
         Get.offAllNamed(
           Routes.SIGNIN,
-          arguments: {'challenge_id': challengeId},
+          arguments: {
+            'challenge_id': challengeId,
+          },
         );
+
         return;
       }
 
-      throw Exception(response.data?['message'] ?? 'Verification failed');
-
+      throw Exception(
+        response.data?['message'] ??
+            'Verification failed',
+      );
     } catch (e) {
-      clearOtpFieldsAndFocus();
+      // Clear fields
+      for (var c in controllers) {
+        c.clear();
+      }
 
-      final errorMessage = e.toString().toLowerCase();
+      // Focus first field
+      focusNodes.first.requestFocus();
 
-      // Now this will only trigger if the backend explicitly returns an expiration message
+      final errorMessage =
+      e.toString().toLowerCase();
+
       if (errorMessage.contains('expire')) {
-        Get.snackbar(
-          'Expired',
-          'The OTP has expired. Please request a new code.',
-          backgroundColor: Colors.redAccent,
-          colorText: Colors.white,
-        );
+        Snackbars.optexpired();
       } else {
         Snackbars.invalidotp();
       }
     } finally {
       isLoading.value = false;
+
+      isVerifying = false;
     }
   }
 
-  void resendOtpCode() async {
-    if (!canResend.value || isLoading.value) return;
+  // =========================================================
+  // RESEND OTP
+  // =========================================================
+
+  Future<void> resendOtpCode() async {
+    if (!canResend.value) return;
+    if (isLoading.value) return;
 
     try {
       isLoading.value = true;
-      final req = ResendOtpReg(challengeId: challengeId);
+
+      // 1. Instantly clear boxes to reset widget states cleanly
+      for (var c in controllers) {
+        c.clear();
+      }
+
+      final req = ResendOtpReg(
+        challengeId: challengeId,
+      );
+
       final response = await _provider.resendOtp(req);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -160,28 +297,43 @@ class OtpVerificationController extends GetxController {
           challengeId = response.data['challenge_id'].toString();
         }
 
-        clearOtpFieldsAndFocus();
-        Get.snackbar('Success', 'A new verification code has been sent!');
+        focusNodes.first.requestFocus();
+        Snackbars.resendotp();
         startCountdown();
+
+        // 2. Set autofill block strictly AFTER the UI clears down
+        ignoreNextAutoFill = true;
+
       } else {
-        throw Exception(response.data?['message'] ?? 'Failed to resend code');
+        throw Exception(
+          response.data?['message'] ?? 'Failed to resend code',
+        );
       }
     } catch (e) {
-      Get.snackbar('Error', e.toString().replaceFirst("Exception: ", ""));
+      Get.snackbar(
+        'Error',
+        e.toString().replaceFirst("Exception: ", ""),
+      );
     } finally {
       isLoading.value = false;
     }
   }
+  // =========================================================
+  // CLEANUP
+  // =========================================================
 
   @override
   void onClose() {
     _timer?.cancel();
-    for (var controller in controllers) {
-      controller.dispose();
+
+    for (var c in controllers) {
+      c.dispose();
     }
-    for (var node in focusNodes) {
-      node.dispose();
+
+    for (var n in focusNodes) {
+      n.dispose();
     }
+
     super.onClose();
   }
 }

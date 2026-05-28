@@ -1,107 +1,99 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:shoppex/core/constants/app_colors.dart';
 import '../../core/constants/app_string.dart';
 
 
 class Snackbars {
   static void closeAll() {
-    // A much safer way to close active snackbars/overlays in GetX
-    // without triggering the uninitialized late variable error.
     if (Get.isSnackbarOpen) {
       try {
-        Get.back(); // Safely pops the top overlay layer if it's a snackbar/dialog
+        Get.back();
       } catch (e) {
-        // Fallback catch-all to prevent crashes if GetX state is desynced
         Get.closeCurrentSnackbar();
       }
     }
   }
 
-  static void showSuccess() {
+  /// Helper method to keep glassmorphism styling consistent across all snackbars
+  static void _showGlassSnackbar({
+    required String title,
+    required String message,
+    required Color baseColor, // The tint color for the glass effect
+    IconData? icon,
+  }) {
     closeAll();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Get.rawSnackbar(
-        title: AppStrings.backOnlineTitle,
-        message: AppStrings.backOnlineMsg,
-        backgroundColor: Colors.green,
+        titleText: Text(
+          title,
+          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+        ),
+        messageText: Text(
+          message,
+          style: TextStyle(color: Colors.white.withOpacity(0.9)),
+        ),
+        icon: icon != null ? Icon(icon, color: Colors.white) : null,
         snackPosition: SnackPosition.TOP,
-        overlayBlur: 0,
-        duration: const Duration(seconds: 3),
-        icon: const Icon(Icons.wifi, color: Colors.white),
-        margin: const EdgeInsets.all(10),
-        borderRadius: 15,
+        duration: const Duration(seconds: 4),
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        borderRadius: 16,
+
+        // --- GLASSMORPHISM ESSENTIALS ---
+        overlayBlur: 4.0, // Blurs the screen behind the snackbar (Optional)
+        barBlur: 20.0,    // Blurs what's directly underneath the snackbar container
+
+        // Removed gradient: Using a solid bright color with alpha opacity for the glass tint
+        backgroundColor: baseColor,
+
+        // A subtle, soft border to define the glass edges
+        borderColor: Colors.white.withOpacity(0.3),
+        borderWidth: 1.5,
       );
     });
+  }
+
+  // --- REFACTORED METHODS ---
+
+  static void showBackOnline() {
+    _showGlassSnackbar(
+      title: AppStrings.backOnlineTitle,
+      message: AppStrings.backOnlineMsg,
+      // Using a vivid, bright green with 0.65 opacity to make it pop over the blur
+      baseColor: const Color(0xFF03C560).withOpacity(0.65),
+      icon: Icons.wifi,
+    );
   }
 
   static void verifyOtp() {
-    closeAll();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Get.rawSnackbar(
-        title: 'Error',
-        message: AppStrings.otpdigits,
-        backgroundColor: Colors.yellow,
-        snackPosition: SnackPosition.TOP,
-        overlayBlur: 0,
-        duration: const Duration(seconds: 3),
-        margin: const EdgeInsets.all(10),
-        borderRadius: 15,
-      );
-    });
+    _showGlassSnackbar(
+      title: 'Error',
+      message: AppStrings.otpdigits,
+      baseColor: Color(0xFFEF0000).withOpacity(0.6),
+    );
   }
 
   static void resendotp() {
-    closeAll();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Get.rawSnackbar(
-        title: 'Success',
-        message: AppStrings.resendotp,
-        backgroundColor: AppColors.textSecondary,
-        snackPosition: SnackPosition.TOP,
-        overlayBlur: 0,
-        duration: const Duration(seconds: 3),
-        margin: const EdgeInsets.all(10),
-        borderRadius: 15,
-      );
-    });
+    _showGlassSnackbar(
+      title: 'Success',
+      message: AppStrings.resendotp,
+      baseColor: Color(0xFF03C560).withOpacity(0.65),
+    );
   }
 
   static void invalidotp() {
-    closeAll();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Get.rawSnackbar(
-        title: 'Error',
-        message: 'The OTP is Invalid',
-        backgroundColor: AppColors.textSecondary,
-        snackPosition: SnackPosition.TOP,
-        overlayBlur: 0,
-        duration: const Duration(seconds: 3),
-        margin: const EdgeInsets.all(10),
-        borderRadius: 15,
-      );
-    });
+    _showGlassSnackbar(
+      title: 'Error',
+      message: 'The OTP is Invalid',
+      baseColor: Color(0xFFEF0000).withOpacity(0.6),
+    );
   }
 
   static void optexpired() {
-    closeAll();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Get.rawSnackbar(
-        title: 'Code Expired',
-        message: AppStrings.optexpired,
-        backgroundColor: AppColors.textSecondary,
-        snackPosition: SnackPosition.TOP,
-        overlayBlur: 0,
-        duration: const Duration(seconds: 3),
-        margin: const EdgeInsets.all(10),
-        borderRadius: 15,
-      );
-    });
+    _showGlassSnackbar(
+      title: 'Code Expired',
+      message: AppStrings.optexpired,
+      baseColor: Color(0xFF03C560).withOpacity(0.65),
+    );
   }
-
 }

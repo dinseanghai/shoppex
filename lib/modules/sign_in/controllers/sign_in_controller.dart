@@ -25,15 +25,12 @@ class SignInController extends GetxController with FormValidators {
   @override
   void onInit() {
     super.onInit();
-    // 🔥 FORCE AN IMMEDIATE CONNECTION CHECK WHEN THIS CONTROLLER BEDS IN
     _checkNetworkOnEntrance();
   }
 
   void _checkNetworkOnEntrance() {
-    // Wait until the current framework frame is completed and painted safely
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (Get.isRegistered<NetworkService>()) {
-        // Now it is completely safe to trigger UI state updates and rebuilds!
         Get.find<NetworkService>().enableBlockerAndCheck();
       }
     });
@@ -68,7 +65,8 @@ class SignInController extends GetxController with FormValidators {
         AuthService.isAuthenticated.value = true;
         AuthService.authToken.value = token;
 
-        Get.offAllNamed(Routes.HOME);
+        // ✅ FIXED: Route to MAIN_LAYOUT instead of HOME to display the layout shell correctly
+        Get.offAllNamed(Routes.MAIN_LAYOUT);
 
         return;
       }

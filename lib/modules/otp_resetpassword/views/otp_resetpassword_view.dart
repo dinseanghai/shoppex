@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 import '../../../shared/layouts/otp_layout.dart';
-import '../controllers/otp_controller.dart';
+import '../controllers/otp_resetpassword_controller.dart';
 
-class OtpVerificationView extends GetView<OtpVerificationController> {
-  const OtpVerificationView({super.key});
+
+class OtpResetpasswordView extends GetView<OtpResetpasswordController> {
+  const OtpResetpasswordView({super.key});
 
   @override
   Widget build(BuildContext context) {

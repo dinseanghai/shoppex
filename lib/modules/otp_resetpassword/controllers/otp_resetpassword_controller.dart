@@ -8,7 +8,8 @@ import '../../../routes/app_pages.dart';
 import '../../../shared/widgets/icon_animation.dart';
 import '../../../shared/widgets/snackbars.dart';
 
-class OtpVerificationController extends GetxController {
+
+class OtpResetpasswordController extends GetxController {
   final _provider = Get.find<ApiClient>();
 
   String challengeId = '';
@@ -17,12 +18,11 @@ class OtpVerificationController extends GetxController {
   // OTP INPUTS
   // =========================================================
 
-  final List<FocusNode> focusNodes = List.generate(6, (_) => FocusNode());
+  final List<FocusNode> focusNodes =
+  List.generate(6, (_) => FocusNode());
 
-  final List<TextEditingController> controllers = List.generate(
-    6,
-    (_) => TextEditingController(),
-  );
+  final List<TextEditingController> controllers =
+  List.generate(6, (_) => TextEditingController());
 
   // =========================================================
   // STATES
@@ -49,8 +49,10 @@ class OtpVerificationController extends GetxController {
   void onInit() {
     super.onInit();
 
-    if (Get.arguments != null && Get.arguments is Map) {
-      challengeId = Get.arguments['challenge_id'] ?? '';
+    if (Get.arguments != null &&
+        Get.arguments is Map) {
+      challengeId =
+          Get.arguments['challenge_id'] ?? '';
     }
 
     startCountdown();
@@ -74,29 +76,37 @@ class OtpVerificationController extends GetxController {
 
     _timer?.cancel();
 
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (isResendSeconds.value > 0) {
-        isResendSeconds.value--;
-      } else {
-        canResend.value = true;
-        timer.cancel();
-      }
-    });
+    _timer = Timer.periodic(
+      const Duration(seconds: 1),
+          (timer) {
+        if (isResendSeconds.value > 0) {
+          isResendSeconds.value--;
+        } else {
+          canResend.value = true;
+          timer.cancel();
+        }
+      },
+    );
   }
 
   // =========================================================
   // OTP HELPERS
   // =========================================================
 
-  String get completeOtp => controllers.map((e) => e.text).join();
+  String get completeOtp =>
+      controllers.map((e) => e.text).join();
 
-  bool get isOtpComplete => completeOtp.length == 6;
+  bool get isOtpComplete =>
+      completeOtp.length == 6;
 
   // =========================================================
   // OTP FIELD CHANGED
   // =========================================================
 
-  void onOtpChanged({required int index, required String value}) {
+  void onOtpChanged({
+    required int index,
+    required String value,
+  }) {
     if (isLoading.value) return;
 
     // --- FIX FOR OS AUTOFILL SPLITTING TENDENCIES ---
@@ -127,25 +137,28 @@ class OtpVerificationController extends GetxController {
     if (index == 5 && value.isNotEmpty) {
       FocusManager.instance.primaryFocus?.unfocus();
 
-      Future.delayed(const Duration(milliseconds: 100), () {
-        final otp = controllers.map((e) => e.text).join();
+      Future.delayed(
+        const Duration(milliseconds: 100),
+            () {
+          final otp = controllers.map((e) => e.text).join();
 
-        // Incomplete code string: do nothing
-        if (otp.length != 6) return;
+          // Incomplete code string: do nothing
+          if (otp.length != 6) return;
 
-        // --- FIXED LOGIC ---
-        // 'ignoreNextAutoFill' should ONLY block the immediate OS popup trigger.
-        // If the value length is 1, the user typed this manually. Do NOT block it!
-        if (ignoreNextAutoFill && value.length != 1) {
+          // --- FIXED LOGIC ---
+          // 'ignoreNextAutoFill' should ONLY block the immediate OS popup trigger.
+          // If the value length is 1, the user typed this manually. Do NOT block it!
+          if (ignoreNextAutoFill && value.length != 1) {
+            ignoreNextAutoFill = false;
+            return;
+          }
+
+          // Clean up flag now that typing/autofill resolved successfully
           ignoreNextAutoFill = false;
-          return;
-        }
 
-        // Clean up flag now that typing/autofill resolved successfully
-        ignoreNextAutoFill = false;
-
-        verifyOtp();
-      });
+          verifyOtp();
+        },
+      );
     }
   }
 
@@ -166,15 +179,21 @@ class OtpVerificationController extends GetxController {
 
       isLoading.value = true;
 
-      final req = OtpReg(challengeId: challengeId, otp: completeOtp);
+      final req = OtpReg(
+        challengeId: challengeId,
+        otp: completeOtp,
+      );
 
-      final response = await _provider.verifyOtp(req);
+      final response =
+      await _provider.verifyOtp(req);
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
+      if (response.statusCode == 200 ||
+          response.statusCode == 201) {
         Get.dialog(
           AlertDialog(
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius:
+              BorderRadius.circular(16),
             ),
             content: Column(
               mainAxisSize: MainAxisSize.min,
@@ -185,15 +204,20 @@ class OtpVerificationController extends GetxController {
 
                 const Text(
                   "Verification Successful!",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
                 ),
 
                 const SizedBox(height: 8),
 
                 Text(
-                  "Redirecting you to SignIn...",
+                  "Redirecting you to Reset Password",
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.grey[600]),
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                  ),
                 ),
               ],
             ),
@@ -201,21 +225,28 @@ class OtpVerificationController extends GetxController {
           barrierDismissible: false,
         );
 
-        await Future.delayed(const Duration(seconds: 2));
+        await Future.delayed(
+          const Duration(seconds: 2),
+        );
 
         if (Get.isDialogOpen ?? false) {
           Get.back();
         }
 
         Get.offAllNamed(
-          Routes.SIGNIN,
-          arguments: {'challenge_id': challengeId},
+          Routes.RESET_PASSWORD,
+          arguments: {
+            'challenge_id': challengeId,
+          },
         );
 
         return;
       }
 
-      throw Exception(response.data?['message'] ?? 'Verification failed');
+      throw Exception(
+        response.data?['message'] ??
+            'Verification failed',
+      );
     } catch (e) {
       // Clear fields
       for (var c in controllers) {
@@ -225,7 +256,8 @@ class OtpVerificationController extends GetxController {
       // Focus first field
       focusNodes.first.requestFocus();
 
-      final errorMessage = e.toString().toLowerCase();
+      final errorMessage =
+      e.toString().toLowerCase();
 
       if (errorMessage.contains('expire')) {
         Snackbars.optexpired();
@@ -255,7 +287,9 @@ class OtpVerificationController extends GetxController {
         c.clear();
       }
 
-      final req = ResendOtpReg(challengeId: challengeId);
+      final req = ResendOtpReg(
+        challengeId: challengeId,
+      );
 
       final response = await _provider.resendOtp(req);
 
@@ -270,11 +304,17 @@ class OtpVerificationController extends GetxController {
 
         // 2. Set autofill block strictly AFTER the UI clears down
         ignoreNextAutoFill = true;
+
       } else {
-        throw Exception(response.data?['message'] ?? 'Failed to resend code');
+        throw Exception(
+          response.data?['message'] ?? 'Failed to resend code',
+        );
       }
     } catch (e) {
-      Get.snackbar('Error', e.toString().replaceFirst("Exception: ", ""));
+      Get.snackbar(
+        'Error',
+        e.toString().replaceFirst("Exception: ", ""),
+      );
     } finally {
       isLoading.value = false;
     }

@@ -14,11 +14,10 @@ class Snackbars {
     }
   }
 
-  /// Helper method to keep glassmorphism styling consistent across all snackbars
   static void _showGlassSnackbar({
     required String title,
     required String message,
-    required Color baseColor, // The tint color for the glass effect
+    required Color baseColor, // Directly accepts your custom color + opacity tint!
     IconData? icon,
   }) {
     closeAll();
@@ -27,40 +26,69 @@ class Snackbars {
       Get.rawSnackbar(
         titleText: Text(
           title,
-          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+          style: const TextStyle(
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+            letterSpacing: 0.3,
+          ),
         ),
         messageText: Text(
           message,
-          style: TextStyle(color: Colors.white.withOpacity(0.9)),
+          style: TextStyle(
+            color: Colors.white.withOpacity(0.9),
+            fontSize: 13,
+          ),
         ),
-        icon: icon != null ? Icon(icon, color: Colors.white) : null,
+
+        // The icon inherits white to stay clean against your tinted background
+        icon: icon != null ? Icon(icon, color: Colors.white, size: 22) : null,
+
         snackPosition: SnackPosition.TOP,
         duration: const Duration(seconds: 4),
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        borderRadius: 16,
+        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+        borderRadius: 20,
 
-        // --- GLASSMORPHISM ESSENTIALS ---
-        overlayBlur: 4.0, // Blurs the screen behind the snackbar (Optional)
-        barBlur: 20.0,    // Blurs what's directly underneath the snackbar container
+        // --- THE BLUR EFFECTS ---
+        barBlur: 25.0,       // Frosted glass blend
+        overlayBlur: 5.0,    // Blurs the entire app background beautifully
 
-        // Removed gradient: Using a solid bright color with alpha opacity for the glass tint
-        backgroundColor: baseColor,
+        // --- TINTED GLASS GRADIENT ---
+        // We use your baseColor tint as the main layer, blending it slightly
+        // to a slightly deeper alpha at the bottom to give it a clean glass gradient depth.
+        backgroundGradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            baseColor, // Your exact color & opacity (e.g., Color(0xFF03C560).withOpacity(0.65))
+            baseColor.withOpacity(
+                (baseColor.opacity - 0.15).clamp(0.0, 1.0) // Keeps it dynamic and slightly lighter at the bottom
+            ),
+          ],
+          stops: const [0.0, 1.0],
+        ),
 
-        // A subtle, soft border to define the glass edges
-        borderColor: Colors.white.withOpacity(0.3),
-        borderWidth: 1.5,
+        // Crisp, clean light-catching border
+        borderColor: Colors.white.withOpacity(0.25),
+        borderWidth: 1.0,
+
+        // Premium ambient shadow to lift it forward over the background blur
+        boxShadows: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 25,
+            offset: const Offset(0, 10),
+          ),
+        ],
       );
     });
   }
-
-  // --- REFACTORED METHODS ---
 
   static void showBackOnline() {
     _showGlassSnackbar(
       title: AppStrings.backOnlineTitle,
       message: AppStrings.backOnlineMsg,
       // Using a vivid, bright green with 0.65 opacity to make it pop over the blur
-      baseColor: const Color(0xFF03C560).withOpacity(0.65),
+      baseColor: const Color(0xFF03C560).withOpacity(0.5),
       icon: Icons.wifi,
     );
   }
@@ -69,7 +97,7 @@ class Snackbars {
     _showGlassSnackbar(
       title: 'Error',
       message: AppStrings.otpdigits,
-      baseColor: Color(0xFFEF0000).withOpacity(0.6),
+      baseColor: Color(0xFFEF0000).withOpacity(0.5),
     );
   }
 
@@ -77,7 +105,7 @@ class Snackbars {
     _showGlassSnackbar(
       title: 'Success',
       message: AppStrings.resendotp,
-      baseColor: Color(0xFF03C560).withOpacity(0.65),
+      baseColor: Color(0xFF03C560).withOpacity(0.5),
     );
   }
 
@@ -85,7 +113,7 @@ class Snackbars {
     _showGlassSnackbar(
       title: 'Error',
       message: 'The OTP is Invalid',
-      baseColor: Color(0xFFEF0000).withOpacity(0.6),
+      baseColor: Color(0xFFEF0000).withOpacity(0.5),
     );
   }
 
@@ -93,7 +121,15 @@ class Snackbars {
     _showGlassSnackbar(
       title: 'Code Expired',
       message: AppStrings.optexpired,
-      baseColor: Color(0xFF03C560).withOpacity(0.65),
+      baseColor: Color(0xFF03C560).withOpacity(0.5),
+    );
+  }
+
+  static void resetotp() {
+    _showGlassSnackbar(
+      title: 'Success',
+      message: AppStrings.resetotp,
+      baseColor: Color(0xFF03C560).withOpacity(0.5),
     );
   }
 }

@@ -9,9 +9,9 @@ class AuthMiddleware extends GetMiddleware {
 
     // 1. If the user HAS a valid authenticated token...
     if (AuthService.to.hasToken) {
-      // ...and they are hitting the root entry points, skip directly to Home!
+      // ...and they are hitting the root entry points, skip directly to MainLayout shell!
       if (route == Routes.ONBOARDING || route == Routes.SIGNIN) {
-        return const RouteSettings(name: Routes.HOME);
+        return const RouteSettings(name: Routes.MAIN_LAYOUT); // ✅ Updated to layout shell
       }
       // For any other internal secured routes, let them pass through cleanly
       return null;

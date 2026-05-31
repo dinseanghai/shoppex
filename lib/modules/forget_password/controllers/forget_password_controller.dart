@@ -5,6 +5,7 @@ import 'package:shoppex/data/models/request/forget_password.dart';
 import '../../../core/utils/validators.dart';
 import '../../../data/models/response/forget_password.dart';
 import '../../../routes/app_pages.dart';
+import '../../../shared/widgets/snackbars.dart';
 
 class ForgetPasswordController extends GetxController with FormValidators {
   final formKey = GlobalKey<FormState>();
@@ -29,33 +30,10 @@ class ForgetPasswordController extends GetxController with FormValidators {
       if (response.statusCode == 200 || response.statusCode == 201) {
         final apiResponse = ForgetPasswordResponse.fromJson(response.data);
 
-        // ADJUSTMENT: Match against what your backend returns on fake emails.
-        // If your server sends an empty string, literal null, or matching flag:
-        if (apiResponse.challengeId == null ||
-            apiResponse.challengeId!.isEmpty ||
-            apiResponse.challengeId == "null") {
+        Snackbars.resetotp();
 
-          Get.snackbar(
-            'Error',
-            'This email address is not registered with us.',
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.red.withOpacity(0.8),
-            colorText: Colors.white,
-          );
-          return; // Block route execution context
-        }
-
-        // If a legitimate challenge ID exists, pass navigation forward
-        Get.snackbar(
-          'Success',
-          apiResponse.message ?? 'A password reset OTP has been sent.',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green.withOpacity(0.8),
-          colorText: Colors.white,
-        );
-
-        Get.toNamed(
-          Routes.HOME,
+        Get.offAllNamed(
+          Routes.OTP_RESETPASSWORD,
           arguments: {
             'challenge_id': apiResponse.challengeId,
             'email': req.email,
@@ -64,32 +42,8 @@ class ForgetPasswordController extends GetxController with FormValidators {
         return;
       }
 
-      // Extract validation errors block (e.g. 422 Invalid Email Format)
-      String errorMessage = 'An unknown error occurred';
-      if (response.data != null) {
-        if (response.data['errors'] != null && response.data['errors']['email'] != null) {
-          errorMessage = response.data['errors']['email'][0];
-        } else {
-          errorMessage = response.data['message'] ?? errorMessage;
-        }
-      }
-
-      Get.snackbar(
-        'Error',
-        errorMessage,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.8),
-        colorText: Colors.white,
-      );
-
     } catch (e) {
-      Get.snackbar(
-        'Connection Error',
-        'Failed to connect to the server.',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.8),
-        colorText: Colors.white,
-      );
+      // Empty because your connectivity stream manages connection issues
     } finally {
       isLoading.value = false;
     }

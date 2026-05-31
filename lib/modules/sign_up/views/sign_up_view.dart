@@ -10,7 +10,7 @@ import '../../../routes/app_pages.dart';
 import '../../../shared/widgets/custom_textformfield.dart';
 import '../../sign_in/widgets/google_signin.dart';
 import '../controllers/sign_up_controller.dart';
-import '../widgets/password_strength.dart';
+import '../../../shared/widgets/password_strength.dart';
 
 class SignUpView extends GetView<SignUpController> {
   const SignUpView({super.key});

@@ -5,6 +5,8 @@ class AppStrings {
     static const String loginTitle = "Welcome Back";
     static const String loginSubtitle = "Please sign in to continue";
     static const String forgotpassword = "Enter the email address associated with your account, and we\'ll send you OTP to reset it.";
+    static const String resetotp = "A password reset OTP has been sent.";
+    static const String resetpassword = "Your new password must be different from previous used passwords.";
 
     // Error Messages
     static const String noConnectionTitle = "No Connection.";

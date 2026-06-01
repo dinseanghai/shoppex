@@ -9,6 +9,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../routes/app_pages.dart';
 import '../../../shared/widgets/custom_textformfield.dart';
 import '../controllers/sign_in_controller.dart';
+import '../widgets/welcome_alert.dart';
 
 class SignInView extends StatelessWidget {
   const SignInView({super.key});
@@ -168,8 +169,16 @@ class SignInView extends StatelessWidget {
                         style: TextStyle(color: Colors.grey, fontSize: 14),
                       ),
                       GestureDetector(
+                        // ⭐ FIXED: Added routing delay to prevent GetX execution memory wipe
                         onTap: () {
                           Get.offAllNamed(Routes.MAIN_LAYOUT);
+
+                          Future.delayed(const Duration(milliseconds: 250), () {
+                            showWelcomeAlert(
+                              userName: "Guest",
+                              isGuest: true,
+                            );
+                          });
                         },
                         child: const Text(
                           'Guest Mode',

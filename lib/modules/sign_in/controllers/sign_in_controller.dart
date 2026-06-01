@@ -9,6 +9,7 @@ import '../../../shared/services/network_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../widgets/welcome_alert.dart';
 
 class SignInController extends GetxController with FormValidators {
   final _authprovider = Get.find<ApiClient>();
@@ -32,7 +33,7 @@ class SignInController extends GetxController with FormValidators {
   void _checkNetworkOnEntrance() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (Get.isRegistered<NetworkService>()) {
-        Get.find<NetworkService>().enableBlockerAndCheck();
+        Get.find<NetworkService>().activateNetworkChecking();
       }
     });
   }
@@ -66,22 +67,37 @@ class SignInController extends GetxController with FormValidators {
         AuthService.isAuthenticated.value = true;
         AuthService.authToken.value = token;
 
-        // ⭐ CRITICAL CHANGE FOR GUEST TO USER TRANSITION:
-        // Update the MainLayoutController state if it's currently in memory
+        // 1. Force update the layout controller state if it exists
         if (Get.isRegistered<MainLayoutController>()) {
-          Get.find<MainLayoutController>().isLoggedIn.value = true;
+          final layoutController = Get.find<MainLayoutController>();
+          layoutController.isLoggedIn.value = true;
+          layoutController.userName.value = name;
         }
 
-        // Route to MAIN_LAYOUT displaying the layout shell with the bottom bar active
+        // 2. Clear stack and route to MAIN_LAYOUT
         Get.offAllNamed(Routes.MAIN_LAYOUT);
+
+        // ⭐ FIXED: Pass the local 'name' variable explicitly to the alert function
+        // so it doesn't matter if the layout controller is still loading!
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          showWelcomeAlert(
+            userName: name, // Use local variable here
+            isGuest: false,
+          );
+        });
 
         return;
       }
       throw Exception(response.data['message'] ?? 'An unknown error occurred');
     } catch (e) {
-      Get.defaultDialog(
+      // Modernizing the generic defaultDialog into a cleaner error snackbar setup
+      Get.rawSnackbar(
         title: "Login Failed",
-        middleText: e.toString().replaceFirst("Exception: ", ""),
+        message: e.toString().replaceFirst("Exception: ", ""),
+        backgroundColor: Colors.redAccent.shade700,
+        margin: const EdgeInsets.all(16),
+        borderRadius: 12,
+        snackPosition: SnackPosition.BOTTOM,
       );
     } finally {
       isLoading.value = false;

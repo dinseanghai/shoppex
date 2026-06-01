@@ -9,16 +9,32 @@ class NetworkService extends GetxController {
   StreamSubscription? _networkSubscription;
 
   final isOnline = true.obs;
-
-  // 🔥 NEW SOURCE OF TRUTH: Tells the UI whether it's allowed to show the glass blur
   final isOverlayAllowed = false.obs;
 
   bool _isShowingSuccessSnackbar = false;
+
+  // ⭐ ADDED: Tracking flag to skip the initial stream notification on app boot
+  bool _isFirstCheck = true;
 
   @override
   void onInit() {
     super.onInit();
     _listenToNetworkChanges();
+  }
+
+  /// ⭐ THE NEW MASTER METHOD
+  void activateNetworkChecking() async {
+    isOverlayAllowed.value = true;
+
+    // Check instantly to see if they are already offline when arriving
+    final currentConnection = await networkInfo.isConnected;
+    isOnline.value = currentConnection;
+  }
+
+  /// ⭐ BACKWARD COMPATIBILITY ALIAS
+  /// This points directly to the new method, keeping old references safe.
+  void enableBlockerAndCheck() {
+    activateNetworkChecking();
   }
 
   void _listenToNetworkChanges() {
@@ -28,32 +44,24 @@ class NetworkService extends GetxController {
     });
   }
 
-  /// 🔥 FORCE AN IMMEDATE CHECK & UNLOCK TARGET FROM SIGN-IN CONTROLLER
-  void enableBlockerAndCheck() async {
-    // 🛑 BYPASS IF CURRENTLY ON ONBOARDING
-    if (_isOnboarding()) return;
-
-    // 1. Immediately reveal the overlay layer structure smoothly
-    isOverlayAllowed.value = true;
-
-    // 2. Fetch hardware asset info and update tracking parameters
-    final currentConnection = await networkInfo.isConnected;
-    isOnline.value = currentConnection;
-  }
-
   void _handleSnackbar(bool status) {
-    // 🔥 SKIP IF CURRENT ROUTE IS ONBOARDING (Handles both the named route and the initial string match)
-    if (_isOnboarding()) {
+    // 1. FIRST BOOT GUARD: Run this completely independent of what screen the user is on
+    if (status && _isFirstCheck) {
+      _isFirstCheck = false; // Turn off the flag so future toggles work perfectly
       return;
     }
 
+    // 2. ROUTE FILTER: Now check if they are on onboarding screens
+    if (_isOnboarding()) return;
+
     if (!status) {
+      // If they go offline, it's definitely no longer the first check
+      _isFirstCheck = false;
       _isShowingSuccessSnackbar = false;
     } else {
       if (_isShowingSuccessSnackbar) return;
 
       _isShowingSuccessSnackbar = true;
-
       Snackbars.closeAll();
       Snackbars.showBackOnline();
 
@@ -63,7 +71,6 @@ class NetworkService extends GetxController {
     }
   }
 
-  /// Helper method to safely catch the initial route phase
   bool _isOnboarding() {
     final current = Get.currentRoute;
     return current == Routes.ONBOARDING || current == '/' || current.isEmpty;

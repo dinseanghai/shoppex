@@ -1,31 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:shoppex/core/constants/app_colors.dart';
 import '../../modules/home/views/home_view.dart';
 import '../../routes/app_pages.dart';
 import '../services/auth_service.dart';
+import '../services/network_service.dart';
 
 class MainLayoutController extends GetxController {
   var currentIndex = 0.obs;
-
-  // Set the initial value dynamically depending on their login state
   var isLoggedIn = false.obs;
-
   var hasNotification = true.obs;
   var cartItemCount = 3.obs;
+  var userName = 'Guest'.obs;
 
   final List<Widget> bodyScreens = [
-    const HomeView(),
-    const Center(child: Text("Cart Screen Content")),
-    const Center(child: Text("Search Screen Content")),
-    const Center(child: Text("Account Screen Content")),
+    const HomeView(), // Index 0 (AppBar shows here)
+    const Center(child: Text("Cart Screen Content")), // Index 1
+    const Center(child: Text("Search Screen Content")), // Index 2
+    const Center(child: Text("Account Screen Content")), // Index 3
   ];
 
   @override
   void onInit() {
     super.onInit();
-    // Synchronizes layout state with your global token status on initialization
-    isLoggedIn.value = AuthService.to.hasToken;
+    try {
+      isLoggedIn.value = AuthService.to.hasToken;
+    } catch (_) {
+      isLoggedIn.value = false;
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      try {
+        if (Get.isRegistered<NetworkService>()) {
+          Get.find<NetworkService>().activateNetworkChecking();
+        }
+      } catch (e) {
+        print("NetworkService injection safety catch: $e");
+      }
+    });
   }
 
   void changeTab(int index) {
@@ -34,7 +45,7 @@ class MainLayoutController extends GetxController {
 
   bool checkAuthOrRedirect() {
     if (!isLoggedIn.value) {
-      Get.toNamed(Routes.SIGNIN); // Uses your exact route constant cleanly!
+      Get.toNamed(Routes.SIGNIN);
       return false;
     }
     return true;
@@ -62,9 +73,8 @@ class MainLayout extends StatelessWidget {
     return Obx(
           () => Scaffold(
         backgroundColor: Colors.white,
-        appBar: controller.currentIndex.value == 3
-            ? null
-            : AppBar(
+        appBar: controller.currentIndex.value == 0
+            ? AppBar(
           backgroundColor: Colors.white,
           elevation: 0,
           centerTitle: false,
@@ -89,7 +99,6 @@ class MainLayout extends StatelessWidget {
               ],
             ),
           ),
-          // ⭐ UPDATED ACTIONS SECTION
           actions: [
             IconButton(
               onPressed: controller.openNotifications,
@@ -99,7 +108,7 @@ class MainLayout extends StatelessWidget {
                 smallSize: 9,
                 child: const Icon(Icons.notifications_none_outlined, color: Color(0xFF111111), size: 26),
               )
-                  : const Icon(Icons.notifications_none_outlined, color: Color(0xFF111111), size: 26), // Clean icon for guest
+                  : const Icon(Icons.notifications_none_outlined, color: Color(0xFF111111), size: 26),
             ),
             Padding(
               padding: const EdgeInsets.only(right: 16.0),
@@ -113,11 +122,12 @@ class MainLayout extends StatelessWidget {
                   ),
                   child: const Icon(Icons.shopping_cart_outlined, color: Color(0xFF111111), size: 26),
                 )
-                    : const Icon(Icons.shopping_cart_outlined, color: Color(0xFF111111), size: 26), // Clean icon for guest
+                    : const Icon(Icons.shopping_cart_outlined, color: Color(0xFF111111), size: 26),
               ),
             ),
           ],
-        ),
+        )
+            : null,
         body: IndexedStack(
           index: controller.currentIndex.value,
           children: controller.bodyScreens,

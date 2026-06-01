@@ -9,21 +9,28 @@ class AuthMiddleware extends GetMiddleware {
 
     // 1. If the user HAS a valid authenticated token...
     if (AuthService.to.hasToken) {
-      // ...and they are hitting the root entry points, skip directly to MainLayout shell!
+      // Skip onboarding and login, send them straight to the main layout
       if (route == Routes.ONBOARDING || route == Routes.SIGNIN) {
-        return const RouteSettings(name: Routes.MAIN_LAYOUT); // ✅ Updated to layout shell
+        return const RouteSettings(name: Routes.MAIN_LAYOUT);
       }
-      // For any other internal secured routes, let them pass through cleanly
       return null;
     }
 
-    // 2. If the user DOES NOT have a token...
-    // Allow them to navigate freely through onboarding or login setups
+    // 2. If the user DOES NOT have a token (Guest Mode)...
+
+    // Allow them to see Onboarding or Sign-In if they explicitly navigate there
     if (route == Routes.ONBOARDING || route == Routes.SIGNIN) {
       return null;
     }
 
-    // Bounce unauthenticated traffic on inner protected routes back to login
+    // ⭐ CRITICAL CHANGE FOR GUEST MODE:
+    // If they don't have a token, but they are trying to access the MAIN_LAYOUT,
+    // ALLOW them to pass through cleanly so they can browse the app as a guest!
+    if (route == Routes.MAIN_LAYOUT) {
+      return null;
+    }
+
+    // Bounce unauthenticated traffic attempting to access deep secure pages back to Sign-In
     return const RouteSettings(name: Routes.SIGNIN);
   }
 }

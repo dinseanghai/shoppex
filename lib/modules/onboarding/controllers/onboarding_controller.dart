@@ -55,7 +55,8 @@ class OnboardingController extends GetxController {
 
   void nextPage() {
     if (isLastPage) {
-      goToSignIn();
+      // ✅ CHANGED: Call guest mode layout transition here
+      navigateToMainLayout();
     } else {
       pageController.nextPage(
         duration: const Duration(milliseconds: 300),
@@ -64,33 +65,17 @@ class OnboardingController extends GetxController {
     }
   }
 
-  void goToSignIn() {
-    Get.offAllNamed(Routes.SIGNIN);
+  // ✅ CHANGED: Renamed from goToSignIn to match your guest requirement
+  void navigateToMainLayout() {
+    // Optional: Save 'isFirstTime = false' to your storage service here
+    // so the app skips onboarding entirely next time it starts up.
+
+    Get.offAllNamed(Routes.MAIN_LAYOUT);
   }
 
   @override
   void onClose() {
     pageController.dispose();
     super.onClose();
-  }
-}
-
-/// Custom ScrollPhysics that locks backward swiping only when on or past page 1.
-class LockBackwardScrollPhysics extends ScrollPhysics {
-  const LockBackwardScrollPhysics({ScrollPhysics? parent}) : super(parent: parent);
-
-  @override
-  LockBackwardScrollPhysics applyTo(ScrollPhysics? ancestor) {
-    return LockBackwardScrollPhysics(parent: buildParent(ancestor));
-  }
-
-  @override
-  double applyBoundaryConditions(ScrollMetrics position, double value) {
-    // value < position.pixels means the user is trying to scroll backwards (left-to-right swipe)
-    // position.pixels <= position.maxScrollExtent / (pagesCount - 1) * 1 checking if we are past page 0 boundary
-    if (value < position.pixels && position.pixels <= (position.maxScrollExtent / 3)) {
-      return value - position.pixels; // Block the overscroll movement backwards to page 0
-    }
-    return super.applyBoundaryConditions(position, value);
   }
 }

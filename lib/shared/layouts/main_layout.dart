@@ -2,14 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shoppex/core/constants/app_colors.dart';
 import '../../modules/home/views/home_view.dart';
+import '../../routes/app_pages.dart';
+import '../services/auth_service.dart';
 
 class MainLayoutController extends GetxController {
   var currentIndex = 0.obs;
 
+  // Set the initial value dynamically depending on their login state
+  var isLoggedIn = false.obs;
+
   var hasNotification = true.obs;
   var cartItemCount = 3.obs;
 
-  // 1. Updated to hold all 4 screens corresponding to the bottom navigation bar
   final List<Widget> bodyScreens = [
     const HomeView(),
     const Center(child: Text("Cart Screen Content")),
@@ -17,95 +21,109 @@ class MainLayoutController extends GetxController {
     const Center(child: Text("Account Screen Content")),
   ];
 
+  @override
+  void onInit() {
+    super.onInit();
+    // Synchronizes layout state with your global token status on initialization
+    isLoggedIn.value = AuthService.to.hasToken;
+  }
+
   void changeTab(int index) {
     currentIndex.value = index;
   }
 
+  bool checkAuthOrRedirect() {
+    if (!isLoggedIn.value) {
+      Get.toNamed(Routes.SIGNIN); // Uses your exact route constant cleanly!
+      return false;
+    }
+    return true;
+  }
+
   void openNotifications() {
+    if (!checkAuthOrRedirect()) return;
     hasNotification.value = false;
     Get.snackbar("Notifications", "Opening notifications...");
   }
 
   void openCart() {
-    // Switch to the Cart tab directly when top-right cart is tapped
+    if (!checkAuthOrRedirect()) return;
     changeTab(1);
   }
 }
 
-// =========================================================================
-// VIEW
-// =========================================================================
 class MainLayout extends StatelessWidget {
   const MainLayout({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Putting the controller into memory
     final controller = Get.put(MainLayoutController());
 
-    return Scaffold(
-      // Explicitly set background color to override any inherited builder dark layers
-      backgroundColor: Colors.white,
-      appBar: AppBar(
+    return Obx(
+          () => Scaffold(
         backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: false,
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 16.0, top: 12.0, bottom: 12.0),
-          child: Container(
-            decoration: BoxDecoration(
-              color: const Color(0xFF111111),
-              borderRadius: BorderRadius.circular(10),
+        appBar: controller.currentIndex.value == 3
+            ? null
+            : AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          centerTitle: false,
+          leading: Padding(
+            padding: const EdgeInsets.only(left: 14.0, top: 9, bottom: 9),
+            child: Container(
+              decoration: BoxDecoration(
+                color: const Color(0xFF111111),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.local_mall_outlined, color: Colors.white, size: 21),
             ),
-            child: const Icon(Icons.local_mall_outlined, color: Colors.white, size: 16),
           ),
-        ),
-        leadingWidth: 52,
-        titleSpacing: 8,
-        title: RichText(
-          text: const TextSpan(
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, letterSpacing: -0.5),
-            children: [
-              TextSpan(text: 'Shopee',),
-              TextSpan(text: 'X',),
-            ],
-          ),
-        ),
-        actions: [
-          Obx(() => IconButton(
-            onPressed: controller.openNotifications,
-            icon: Badge(
-              isLabelVisible: controller.hasNotification.value,
-
-              smallSize: 9,
-              child: const Icon(Icons.notifications_none_outlined, color: Color(0xFF111111), size: 26),
+          leadingWidth: 52,
+          titleSpacing: 8,
+          title: RichText(
+            text: const TextSpan(
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, letterSpacing: -0.5),
+              children: [
+                TextSpan(text: 'Shopee', style: TextStyle(color: Colors.black87)),
+                TextSpan(text: 'X', style: TextStyle(color: Color(0xFF3D5AFE))),
+              ],
             ),
-          )),
-          Obx(() => Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: IconButton(
-              onPressed: controller.openCart,
-              icon: Badge(
-                label: Text(
-                  '${controller.cartItemCount.value}',
-                  style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                ),
-
-                child: const Icon(Icons.shopping_cart_outlined, color: Color(0xFF111111), size: 26),
+          ),
+          // ⭐ UPDATED ACTIONS SECTION
+          actions: [
+            IconButton(
+              onPressed: controller.openNotifications,
+              icon: controller.isLoggedIn.value
+                  ? Badge(
+                isLabelVisible: controller.hasNotification.value,
+                smallSize: 9,
+                child: const Icon(Icons.notifications_none_outlined, color: Color(0xFF111111), size: 26),
+              )
+                  : const Icon(Icons.notifications_none_outlined, color: Color(0xFF111111), size: 26), // Clean icon for guest
+            ),
+            Padding(
+              padding: const EdgeInsets.only(right: 16.0),
+              child: IconButton(
+                onPressed: controller.openCart,
+                icon: controller.isLoggedIn.value
+                    ? Badge(
+                  label: Text(
+                    '${controller.cartItemCount.value}',
+                    style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                  ),
+                  child: const Icon(Icons.shopping_cart_outlined, color: Color(0xFF111111), size: 26),
+                )
+                    : const Icon(Icons.shopping_cart_outlined, color: Color(0xFF111111), size: 26), // Clean icon for guest
               ),
             ),
-          )),
-        ],
-      ),
-      // Pushes screens safely below the top appbar
-      body: Obx(
-            () => IndexedStack(
+          ],
+        ),
+        body: IndexedStack(
           index: controller.currentIndex.value,
           children: controller.bodyScreens,
         ),
-      ),
-      bottomNavigationBar: Obx(
-            () => Container(
+        bottomNavigationBar: controller.isLoggedIn.value
+            ? Container(
           decoration: const BoxDecoration(
             border: Border(top: BorderSide(color: Color(0xFFE5E5E5), width: 1)),
           ),
@@ -120,11 +138,12 @@ class MainLayout extends StatelessWidget {
             items: const [
               BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: 'Home'),
               BottomNavigationBarItem(icon: Icon(Icons.shopping_cart_outlined), activeIcon: Icon(Icons.shopping_cart), label: 'Cart'),
-              BottomNavigationBarItem(icon: Icon(Icons.search_outlined),activeIcon: Icon(Icons.search), label: 'Search'),
+              BottomNavigationBarItem(icon: Icon(Icons.search_outlined), activeIcon: Icon(Icons.search), label: 'Search'),
               BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'Account'),
             ],
           ),
-        ),
+        )
+            : null,
       ),
     );
   }

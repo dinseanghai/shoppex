@@ -3,6 +3,7 @@ import '../../../core/utils/validators.dart';
 import '../../../data/local/secure_storage.dart';
 import '../../../data/models/request/login_model.dart';
 import '../../../routes/app_pages.dart';
+import '../../../shared/layouts/main_layout.dart';
 import '../../../shared/services/auth_service.dart';
 import '../../../shared/services/network_service.dart';
 import 'package:flutter/material.dart';
@@ -65,7 +66,13 @@ class SignInController extends GetxController with FormValidators {
         AuthService.isAuthenticated.value = true;
         AuthService.authToken.value = token;
 
-        // ✅ FIXED: Route to MAIN_LAYOUT instead of HOME to display the layout shell correctly
+        // ⭐ CRITICAL CHANGE FOR GUEST TO USER TRANSITION:
+        // Update the MainLayoutController state if it's currently in memory
+        if (Get.isRegistered<MainLayoutController>()) {
+          Get.find<MainLayoutController>().isLoggedIn.value = true;
+        }
+
+        // Route to MAIN_LAYOUT displaying the layout shell with the bottom bar active
         Get.offAllNamed(Routes.MAIN_LAYOUT);
 
         return;

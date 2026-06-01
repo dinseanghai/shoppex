@@ -159,6 +159,29 @@ class SignInView extends StatelessWidget {
                       ),
                     ],
                   ),
+                  AppSizes.gapH8,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        "Continue as ",
+                        style: TextStyle(color: Colors.grey, fontSize: 14),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          Get.offAllNamed(Routes.MAIN_LAYOUT);
+                        },
+                        child: const Text(
+                          'Guest Mode',
+                          style: TextStyle(
+                            color: Color(0xFF3B59F6),
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
                 ],
               ),
             ),

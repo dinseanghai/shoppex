@@ -1,5 +1,4 @@
 import 'package:get/get.dart';
-
 import '../modules/forget_password/bindings/forget_password_binding.dart';
 import '../modules/forget_password/views/forget_password_view.dart';
 import '../modules/home/bindings/home_binding.dart';
@@ -32,8 +31,9 @@ class AppPages {
       name: _Paths.MAIN_LAYOUT,
       page: () => const MainLayout(),
       bindings: [
-        HomeBinding(), // Injecting Home dependencies right here!
-        // You can add CartBinding(), SearchBinding(), etc. here later
+        HomeBinding(),
+        // Instantiates the layout controller cleanly right here!
+        BindingsBuilder(() => Get.lazyPut(() => MainLayoutController())),
       ],
     ),
 

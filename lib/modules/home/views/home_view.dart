@@ -9,11 +9,8 @@ class HomeView extends GetView<HomeController> {
 
   @override
   Widget build(BuildContext context) {
-    // 1. FIXED: Removed Get.put(). Since this is a GetView,
-    // it automatically finds the Controller injected by your HomeBinding!
 
     return Obx(() {
-      // 2. FIXED: If loading, keep it centered within the layout block cleanly
       if (controller.isLoading.value) {
         return const Center(
           child: LoadingWidget(
@@ -23,8 +20,6 @@ class HomeView extends GetView<HomeController> {
         );
       }
 
-      // 3. CLEANED UP: Your MainLayout already has an AppBar,
-      // so removing SafeArea avoids a double-top padding gap.
       return SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -72,7 +67,7 @@ class HomeView extends GetView<HomeController> {
                 ),
               ),
             ),
-            AppSizes.gapH24, // cleaner spacing replacement
+
             Center(
               child: ElevatedButton(
                 onPressed: () => controller.confirmLogout(),

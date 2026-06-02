@@ -8,7 +8,7 @@ import '../../../shared/services/auth_service.dart';
 import '../../../shared/services/network_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
+import '../../account/controllers/account_controller.dart';
 import '../widgets/welcome_alert.dart';
 
 class SignInController extends GetxController with FormValidators {
@@ -58,30 +58,47 @@ class SignInController extends GetxController with FormValidators {
 
       final response = await _authprovider.login(req);
 
-      if (response.statusCode == 200) {
-        final token = response.data['token'];
-        final name = response.data['user']['name'] ?? 'User';
+      if (response.statusCode == 200 && response.data != null) {
+        final data = response.data;
 
+        // 1. Extract values exactly matching your API structure
+        final String token = data['token'];
+        final String name = data['user']['name'] ?? 'Hai';
+        final String email = data['user']['email'] ?? 'dinseanghai95@gmail.com';
+
+        // 🟢 FIX: Extract the role string out of the server's roles array list here!
+        final List<dynamic> rolesList = data['user']['roles'] ?? [];
+        final String role = rolesList.isNotEmpty ? rolesList[0].toString() : 'Customer';
+
+        // 2. Save everything to disk storage all at once (including your newly defined role!)
         await SecureStorage.write(token);
+        await SecureStorage.writeUserData(name: name, email: email, role: role);
 
-        AuthService.isAuthenticated.value = true;
+        // 3. Authenticate active state instance variables
         AuthService.authToken.value = token;
+        AuthService.isAuthenticated.value = true;
 
-        // 1. Force update the layout controller state if it exists
+        // 4. Update the active MainLayoutController status fields
         if (Get.isRegistered<MainLayoutController>()) {
           final layoutController = Get.find<MainLayoutController>();
           layoutController.isLoggedIn.value = true;
           layoutController.userName.value = name;
         }
 
-        // 2. Clear stack and route to MAIN_LAYOUT
+        // 5. Safely push real-time updates directly to your AccountController if active
+        if (Get.isRegistered<AccountController>()) {
+          final accountController = Get.find<AccountController>();
+          accountController.userName.value = name;
+          accountController.userEmail.value = email;
+          accountController.userRole.value = role; // Updates your UI badge instantly
+        }
+
+        // 6. Clear stack tracking navigation histories and open main screen dashboard
         Get.offAllNamed(Routes.MAIN_LAYOUT);
 
-        // ⭐ FIXED: Pass the local 'name' variable explicitly to the alert function
-        // so it doesn't matter if the layout controller is still loading!
         WidgetsBinding.instance.addPostFrameCallback((_) {
           showWelcomeAlert(
-            userName: name, // Use local variable here
+            userName: name,
             isGuest: false,
           );
         });
@@ -90,7 +107,6 @@ class SignInController extends GetxController with FormValidators {
       }
       throw Exception(response.data['message'] ?? 'An unknown error occurred');
     } catch (e) {
-      // Modernizing the generic defaultDialog into a cleaner error snackbar setup
       Get.rawSnackbar(
         title: "Login Failed",
         message: e.toString().replaceFirst("Exception: ", ""),

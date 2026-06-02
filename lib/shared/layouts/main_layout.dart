@@ -13,13 +13,6 @@ class MainLayoutController extends GetxController {
   var cartItemCount = 3.obs;
   var userName = 'Guest'.obs;
 
-  final List<Widget> bodyScreens = [
-    const HomeView(), // Index 0 (AppBar shows here)
-    const Center(child: Text("Cart Screen Content")), // Index 1
-    const Center(child: Text("Search Screen Content")), // Index 2
-    const AccountView(), // Index 3
-  ];
-
   @override
   void onInit() {
     super.onInit();
@@ -38,6 +31,46 @@ class MainLayoutController extends GetxController {
         print("NetworkService injection safety catch: $e");
       }
     });
+  }
+
+  // 🟢 FIX: Read directly from AuthService reactive variables
+  List<Widget> get bodyScreens {
+    // Check if user is logged in AND is a Vendor (case-insensitive check for safety)
+    if (isLoggedIn.value && AuthService.userRole.value.toLowerCase() == 'vender' || AuthService.userRole.value == 'Vendor') {
+      return const [
+        HomeView(),
+        Center(child: Text("Orders Management Screen")), // Index 1
+        Center(child: Text("Products Catalog Screen")), // Index 2
+        AccountView(), // Index 3
+      ];
+    } else {
+      // Default Customer screens
+      return const [
+        HomeView(),
+        Center(child: Text("Cart Screen Content")),
+        Center(child: Text("Search Screen Content")),
+        AccountView(),
+      ];
+    }
+  }
+
+  // 🟢 FIX: Dynamic navbar items matching the roles
+  List<BottomNavigationBarItem> get navItems {
+    if (isLoggedIn.value && AuthService.userRole.value.toLowerCase() == 'vender' || AuthService.userRole.value == 'Vendor') {
+      return const [
+        BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: 'Home'),
+        BottomNavigationBarItem(icon: Icon(Icons.shopping_bag_outlined), activeIcon: Icon(Icons.shopping_bag), label: 'Orders'),
+        BottomNavigationBarItem(icon: Icon(Icons.inventory_2_outlined), activeIcon: Icon(Icons.inventory_2), label: 'Products'),
+        BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'Account'),
+      ];
+    } else {
+      return const [
+        BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: 'Home'),
+        BottomNavigationBarItem(icon: Icon(Icons.shopping_cart_outlined), activeIcon: Icon(Icons.shopping_cart), label: 'Cart'),
+        BottomNavigationBarItem(icon: Icon(Icons.search_outlined), activeIcon: Icon(Icons.search), label: 'Search'),
+        BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'Account'),
+      ];
+    }
   }
 
   void changeTab(int index) {
@@ -111,24 +144,28 @@ class MainLayout extends StatelessWidget {
               )
                   : const Icon(Icons.notifications_none_outlined, color: Color(0xFF111111), size: 26),
             ),
-            Padding(
-              padding: const EdgeInsets.only(right: 16.0),
-              child: IconButton(
-                onPressed: controller.openCart,
-                icon: controller.isLoggedIn.value
-                    ? Badge(
-                  label: Text(
-                    '${controller.cartItemCount.value}',
-                    style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                  ),
-                  child: const Icon(Icons.shopping_cart_outlined, color: Color(0xFF111111), size: 26),
-                )
-                    : const Icon(Icons.shopping_cart_outlined, color: Color(0xFF111111), size: 26),
+
+            // 🟢 Fixed: Checking the global AuthService variable safely with case-insensitivity
+            if (AuthService.userRole.value.toLowerCase() != 'vendor' && AuthService.userRole.value.toLowerCase() != 'vender')
+              Padding(
+                padding: const EdgeInsets.only(right: 16.0),
+                child: IconButton(
+                  onPressed: controller.openCart,
+                  icon: controller.isLoggedIn.value
+                      ? Badge(
+                    label: Text(
+                      '${controller.cartItemCount.value}',
+                      style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                    ),
+                    child: const Icon(Icons.shopping_cart_outlined, color: Color(0xFF111111), size: 26),
+                  )
+                      : const Icon(Icons.shopping_cart_outlined, color: Color(0xFF111111), size: 26),
+                ),
               ),
-            ),
           ],
         )
             : null,
+        // 🟢 FIX: Uses dynamic body list getter reactively
         body: IndexedStack(
           index: controller.currentIndex.value,
           children: controller.bodyScreens,
@@ -146,12 +183,8 @@ class MainLayout extends StatelessWidget {
             selectedItemColor: Colors.blueAccent,
             unselectedItemColor: const Color(0xFF666666),
             elevation: 0,
-            items: const [
-              BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: 'Home'),
-              BottomNavigationBarItem(icon: Icon(Icons.shopping_cart_outlined), activeIcon: Icon(Icons.shopping_cart), label: 'Cart'),
-              BottomNavigationBarItem(icon: Icon(Icons.search_outlined), activeIcon: Icon(Icons.search), label: 'Search'),
-              BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'Account'),
-            ],
+            // 🟢 FIX: Uses dynamic navbar items array reactively
+            items: controller.navItems,
           ),
         )
             : null,

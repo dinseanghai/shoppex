@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../modules/account/views/account_view.dart';
 import '../../modules/home/views/home_view.dart';
 import '../../routes/app_pages.dart';
 import '../services/auth_service.dart';
@@ -16,7 +17,7 @@ class MainLayoutController extends GetxController {
     const HomeView(), // Index 0 (AppBar shows here)
     const Center(child: Text("Cart Screen Content")), // Index 1
     const Center(child: Text("Search Screen Content")), // Index 2
-    const Center(child: Text("Account Screen Content")), // Index 3
+    const AccountView(), // Index 3
   ];
 
   @override

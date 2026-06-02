@@ -1,4 +1,7 @@
 import 'package:get/get.dart';
+
+import '../modules/account/bindings/account_binding.dart';
+import '../modules/account/views/account_view.dart';
 import '../modules/forget_password/bindings/forget_password_binding.dart';
 import '../modules/forget_password/views/forget_password_view.dart';
 import '../modules/home/bindings/home_binding.dart';
@@ -25,18 +28,16 @@ class AppPages {
 
   static const INITIAL = Routes.ONBOARDING;
 
-
   static final routes = [
     GetPage(
       name: _Paths.MAIN_LAYOUT,
       page: () => const MainLayout(),
       bindings: [
         HomeBinding(),
-        // Instantiates the layout controller cleanly right here!
+        AccountBinding(),
         BindingsBuilder(() => Get.lazyPut(() => MainLayoutController())),
       ],
     ),
-
     GetPage(
       name: _Paths.HOME,
       page: () => const HomeView(),
@@ -78,6 +79,11 @@ class AppPages {
       name: _Paths.RESET_PASSWORD,
       page: () => const ResetPasswordView(),
       binding: ResetPasswordBinding(),
+    ),
+    GetPage(
+      name: _Paths.ACCOUNT,
+      page: () => const AccountView(),
+      binding: AccountBinding(),
     ),
   ];
 }

@@ -14,6 +14,7 @@ import '../widgets/welcome_alert.dart';
 class SignInController extends GetxController with FormValidators {
   final _authprovider = Get.find<ApiClient>();
 
+
   // --- Form & Input Elements ---
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
@@ -66,23 +67,24 @@ class SignInController extends GetxController with FormValidators {
         final String name = data['user']['name'] ?? 'Hai';
         final String email = data['user']['email'] ?? 'dinseanghai95@gmail.com';
 
-        // 🟢 FIX: Extract the role string out of the server's roles array list here!
+        // Extract the role string out of the server's roles array list
         final List<dynamic> rolesList = data['user']['roles'] ?? [];
         final String role = rolesList.isNotEmpty ? rolesList[0].toString() : 'Customer';
 
-        // 2. Save everything to disk storage all at once (including your newly defined role!)
-        await SecureStorage.write(token);
+        // 2. Save everything to disk storage all at once
+        await SecureStorage.writeToken(token);
         await SecureStorage.writeUserData(name: name, email: email, role: role);
 
         // 3. Authenticate active state instance variables
         AuthService.authToken.value = token;
+        AuthService.userRole.value = role; // 🟢 FIX: Update the global reactive role state here!
         AuthService.isAuthenticated.value = true;
 
         // 4. Update the active MainLayoutController status fields
         if (Get.isRegistered<MainLayoutController>()) {
           final layoutController = Get.find<MainLayoutController>();
-          layoutController.isLoggedIn.value = true;
           layoutController.userName.value = name;
+          layoutController.isLoggedIn.value = true; // Recalculates bodyScreens & navItems reactively
         }
 
         // 5. Safely push real-time updates directly to your AccountController if active

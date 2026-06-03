@@ -74,15 +74,6 @@ class HomeView extends GetView<HomeController> {
                 ),
               ),
 
-              const SizedBox(height: 24), // Added spacing before the logout button
-
-              Center(
-                child: ElevatedButton(
-                  onPressed: () => controller.confirmLogout(),
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
-                  child: const Text("Logout Test", style: TextStyle(color: Colors.white)),
-                ),
-              )
             ],
           ),
         );

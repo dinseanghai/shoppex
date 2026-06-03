@@ -1,5 +1,11 @@
+import 'package:flutter/material.dart';
+
+import '../../../routes/app_pages.dart';
+import '../../../shared/layouts/main_layout.dart';
 import '../../../shared/services/auth_service.dart';
 import 'package:get/get.dart';
+
+import '../../../shared/widgets/loading_widget.dart';
 
 class AccountController extends GetxController {
   // Reactive UI variables
@@ -42,6 +48,81 @@ class AccountController extends GetxController {
         _syncWithAuthService();
       }
     });
+  }
+
+  void confirmLogout() {
+    Get.defaultDialog(
+      title: "Are you sure you want to sign out?",
+      middleText: "Signing out will temporarily hide all your personal data. To see these again, just log back into your account.",
+      textConfirm: "Yes",
+      textCancel: "No",
+      confirmTextColor: Colors.white,
+      buttonColor: Colors.redAccent,
+
+      // ADD THIS FOR PADDING:
+      contentPadding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 16.0),
+      titlePadding: const EdgeInsets.only(top: 24.0, left: 16.0, right: 16.0), // Optional: pad the title too
+
+      onConfirm: () {
+        Get.back();
+        logout();
+      },
+    );
+  }
+
+  void logout() async {
+    // 1. Capture the role before clearing any data state
+    final bool userWasVendor = isVendor;
+
+    Get.showOverlay(
+      loadingWidget: Center(
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.9),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: const LoadingWidget(
+            size: 50.0,
+            isButtonMode: false,
+          ),
+        ),
+      ),
+      opacity: 0.3,
+      opacityColor: Colors.black,
+      asyncFunction: () async {
+        try {
+          await Future.delayed(const Duration(milliseconds: 800));
+
+          // 2. Clear local storage authentication tokens globally
+          await AuthService.to.logout();
+
+          // 3. Reset the MainLayoutController active navigation flags
+          if (Get.isRegistered<MainLayoutController>()) {
+            final mainLayout = Get.find<MainLayoutController>();
+            mainLayout.isLoggedIn.value = false;
+            mainLayout.currentIndex.value = 0; // Return tab back to home dashboard
+            mainLayout.userName.value = 'Guest'; // Reset name to Guest
+          }
+
+          // 4. 🟢 DYNAMIC ROUTING BASED ON ROLE
+          if (userWasVendor) {
+            // Replace Routes.SIGN_IN with your actual sign-in route name
+            Get.offAllNamed(Routes.SIGNIN);
+          } else {
+            Get.offAllNamed(Routes.MAIN_LAYOUT);
+          }
+
+        } catch (e) {
+          Get.snackbar(
+            "Logout Failed",
+            e.toString(),
+            backgroundColor: Colors.redAccent,
+            colorText: Colors.white,
+          );
+        }
+      },
+    );
   }
 
   /// Helper logic to pull current data snapshot securely

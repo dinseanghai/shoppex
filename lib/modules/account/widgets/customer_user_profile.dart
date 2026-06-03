@@ -1,43 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class UserProfileHeader extends StatelessWidget {
-  final String title;
+import '../controllers/account_controller.dart';
 
-  // Dynamic Server Responses (GetX Observables)
-  final RxString imageUrl;
-  final RxString userName;
-  final RxString userEmail;
-  final RxString userRole;
-
-  // Optional Configurations (With Defaults)
-  final List<Color>? headerGradientColors;
-  final bool showBackButton;
-  final Widget? rightAction;
-
-  UserProfileHeader({
-    Key? key,
-    required this.title,
-    required this.imageUrl,
-    required this.userName,
-    required this.userEmail,
-    RxString? userRole,
-    // 🟢 Sophisticated Light Gray / Slate-Platinum Gradient
-    this.headerGradientColors = const [
-      Color(0xFF4A65FF), // Vibrant blue on the left
-      Color(0xFF94A6FD), // Slightly lighter blue on the right
-    ],
-    this.showBackButton = false,
-    this.rightAction,
-  })  : userRole = userRole ?? ''.obs,
-        super(key: key);
+class UserProfileHeader extends GetView<AccountController> {
+  const UserProfileHeader({super.key});
 
   @override
   Widget build(BuildContext context) {
     final double statusBarHeight = MediaQuery.of(context).padding.top;
-
-    // Dark Slate color for crisp typography contrast against the light gray banner
     const Color darkSlateContentColor = Color(0xFF334155);
+
+    // Sophisticated Light Gray / Slate-Platinum Gradient
+    const List<Color> headerGradientColors = [
+      Color(0xFF4A65FF), // Vibrant blue on the left
+      Color(0xFF94A6FD), // Slightly lighter blue on the right
+    ];
 
     return Column(
       children: [
@@ -49,22 +27,20 @@ class UserProfileHeader extends StatelessWidget {
             // Gray Gradient Background Banner
             Container(
               height: 200,
-              decoration: BoxDecoration(
-                gradient: headerGradientColors != null
-                    ? LinearGradient(
-                  colors: headerGradientColors!,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: headerGradientColors,
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                )
-                    : null,
-                borderRadius: const BorderRadius.only(
+                ),
+                borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(32),
                   bottomRight: Radius.circular(32),
                 ),
               ),
             ),
 
-            // Navigation Bar (Back, Title, Right Action)
+            // Navigation Bar (Title & Action)
             Positioned(
               top: statusBarHeight + 2,
               left: 16,
@@ -72,21 +48,22 @@ class UserProfileHeader extends StatelessWidget {
               child: SizedBox(
                 height: kToolbarHeight,
                 child: NavigationToolbar(
-                  leading: showBackButton
-                      ? IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new_rounded, color: darkSlateContentColor, size: 20),
-                    onPressed: () => Get.back(),
-                  )
-                      : null,
-                  middle: Text(
-                    title,
-                    style: const TextStyle(
+                  middle: const Text(
+                    'My Account',
+                    style: TextStyle(
                       color: Colors.white,
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  trailing: rightAction,
+                  trailing: IconButton(
+                    onPressed: controller.onEditProfilePressed,
+                    icon: const Icon(
+                      Icons.settings_outlined,
+                      color: Colors.white,
+                      size: 22,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -108,21 +85,22 @@ class UserProfileHeader extends StatelessWidget {
                   ],
                 ),
                 child: Obx(() {
-                  final imagePath = imageUrl.value;
+                  final imagePath = controller.userImageUrl.value;
                   final bool hasNoImage = imagePath.isEmpty ||
                       imagePath == "null" ||
                       imagePath.trim().isEmpty;
 
                   return CircleAvatar(
-                      radius: 60,
-                      backgroundColor: Colors.grey[100],
-                      backgroundImage: !hasNoImage
-                          ? NetworkImage(imagePath) as ImageProvider
-                          : null,
-                      child: hasNoImage
-                          ? Icon(Icons.person, size: 50, color: Colors.grey[400])
-                          : null);
-                  }),
+                    radius: 60,
+                    backgroundColor: Colors.grey[100],
+                    backgroundImage: !hasNoImage
+                        ? NetworkImage(imagePath) as ImageProvider
+                        : null,
+                    child: hasNoImage
+                        ? Icon(Icons.person, size: 50, color: Colors.grey[400])
+                        : null,
+                  );
+                }),
               ),
             ),
           ],
@@ -138,7 +116,7 @@ class UserProfileHeader extends StatelessWidget {
             children: [
               // User Name Text String
               Obx(() => Text(
-                userName.value.isNotEmpty ? userName.value : 'Loading...',
+                controller.userName.value.isNotEmpty ? controller.userName.value : 'Loading...',
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 24,
@@ -149,7 +127,7 @@ class UserProfileHeader extends StatelessWidget {
 
               // Reactive User Role Badge (Collapses cleanly if empty)
               Obx(() {
-                final roleStr = userRole.value.trim();
+                final roleStr = controller.userRole.value.trim();
                 if (roleStr.isEmpty) {
                   return const SizedBox.shrink();
                 }
@@ -167,7 +145,6 @@ class UserProfileHeader extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: roleBgColor,
                       borderRadius: BorderRadius.circular(100),
-                      // Add the boxShadow property here
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.2),
@@ -201,7 +178,7 @@ class UserProfileHeader extends StatelessWidget {
                   ),
                   const SizedBox(width: 6),
                   Obx(() => Text(
-                    userEmail.value.isNotEmpty ? userEmail.value : '',
+                    controller.userEmail.value.isNotEmpty ? controller.userEmail.value : '',
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey.shade600,

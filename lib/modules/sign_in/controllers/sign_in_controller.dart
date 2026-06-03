@@ -14,7 +14,6 @@ import '../widgets/welcome_alert.dart';
 class SignInController extends GetxController with FormValidators {
   final _authprovider = Get.find<ApiClient>();
 
-
   // --- Form & Input Elements ---
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
@@ -60,42 +59,26 @@ class SignInController extends GetxController with FormValidators {
       final response = await _authprovider.login(req);
 
       if (response.statusCode == 200 && response.data != null) {
-        final data = response.data;
+        final data = response.data as Map<String, dynamic>;
 
         // 1. Extract values exactly matching your API structure
-        final String token = data['token'];
-        final String name = data['user']['name'] ?? 'Hai';
-        final String email = data['user']['email'] ?? 'dinseanghai95@gmail.com';
+        final String name = data['user']?['name'] ?? 'Hai';
 
-        // Extract the role string out of the server's roles array list
-        final List<dynamic> rolesList = data['user']['roles'] ?? [];
-        final String role = rolesList.isNotEmpty ? rolesList[0].toString() : 'Customer';
+        // 2. Delegate all storage, caching, and state initialization to AuthService
+        // 🟢 This automatically handles image_url, token, name, email, and roles safely!
+        await AuthService.to.handleLoginSuccess(data);
 
-        // 2. Save everything to disk storage all at once
-        await SecureStorage.writeToken(token);
-        await SecureStorage.writeUserData(name: name, email: email, role: role);
-
-        // 3. Authenticate active state instance variables
-        AuthService.authToken.value = token;
-        AuthService.userRole.value = role; // 🟢 FIX: Update the global reactive role state here!
-        AuthService.isAuthenticated.value = true;
-
-        // 4. Update the active MainLayoutController status fields
+        // 3. Update the active MainLayoutController status fields
         if (Get.isRegistered<MainLayoutController>()) {
           final layoutController = Get.find<MainLayoutController>();
           layoutController.userName.value = name;
           layoutController.isLoggedIn.value = true; // Recalculates bodyScreens & navItems reactively
         }
 
-        // 5. Safely push real-time updates directly to your AccountController if active
-        if (Get.isRegistered<AccountController>()) {
-          final accountController = Get.find<AccountController>();
-          accountController.userName.value = name;
-          accountController.userEmail.value = email;
-          accountController.userRole.value = role; // Updates your UI badge instantly
-        }
+        // Note: You no longer manually need to check if AccountController is registered here!
+        // Because AccountController's onInit() already listens to changes inside AuthService using `ever`.
 
-        // 6. Clear stack tracking navigation histories and open main screen dashboard
+        // 4. Clear stack tracking navigation histories and open main screen dashboard
         Get.offAllNamed(Routes.MAIN_LAYOUT);
 
         WidgetsBinding.instance.addPostFrameCallback((_) {

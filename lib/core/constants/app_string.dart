@@ -14,6 +14,7 @@ class AppStrings {
     static const String otpdigits = "Please fill out all 6 digits of the OTP.";
     static const String resendotp = "A new verification code has been sent!";
     static const String optexpired = "The OTP verification code has expired. Please tap 'Resend'.";
+    static const String loginfailed = "The provided credentials are incorrect.";
 
     // Success Messages
     static const String backOnlineTitle = "Connected";

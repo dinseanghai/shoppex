@@ -14,7 +14,6 @@ void main() async {
   // 1. Ensure Flutter engine bindings are fully ready
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
 
-  // Handle App Flavor Configuration
   try {
     F.appFlavor = Flavor.values.firstWhere(
           (e) => e.name == appFlavor,
@@ -30,8 +29,6 @@ void main() async {
   // 3. Setup synchronous dependency injections
   DependencyInjection.init();
 
-  // FIXED: Converted from lazyPut(fenix: true) to permanent singletons.
-  // This completely stops GetX from disposing of and rebuilding the
   // underlying OS stream listeners when navigating between routes.
   Get.put<Connectivity>(Connectivity(), permanent: true);
   Get.put<NetworkInfo>(NetworkInfoImpl(Get.find()), permanent: true);

@@ -44,6 +44,7 @@ class CustomerAccountMenu extends GetView<AccountController> {
             icon: Icons.person_outline,
             title: 'Personal Information',
             subtitle: 'Update your details',
+
             onTap: () {},
           ),
           CustomListtile(
@@ -93,7 +94,7 @@ class CustomerAccountMenu extends GetView<AccountController> {
       child: Text(
         title,
         style: const TextStyle(
-          fontSize: 17,
+          fontSize: 16,
           fontWeight: FontWeight.w700,
           color: Color(0xFF333333),
         ),

@@ -1,6 +1,5 @@
 import '../../../core/network/api_client.dart';
 import '../../../core/utils/validators.dart';
-import '../../../data/local/secure_storage.dart';
 import '../../../data/models/request/login_model.dart';
 import '../../../routes/app_pages.dart';
 import '../../../shared/layouts/main_layout.dart';
@@ -8,7 +7,7 @@ import '../../../shared/services/auth_service.dart';
 import '../../../shared/services/network_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../account/controllers/account_controller.dart';
+import '../../../shared/widgets/snackbars.dart';
 import '../widgets/welcome_alert.dart';
 
 class SignInController extends GetxController with FormValidators {
@@ -92,14 +91,7 @@ class SignInController extends GetxController with FormValidators {
       }
       throw Exception(response.data['message'] ?? 'An unknown error occurred');
     } catch (e) {
-      Get.rawSnackbar(
-        title: "Login Failed",
-        message: e.toString().replaceFirst("Exception: ", ""),
-        backgroundColor: Colors.redAccent.shade700,
-        margin: const EdgeInsets.all(16),
-        borderRadius: 12,
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      Snackbars.loginFailed();
     } finally {
       isLoading.value = false;
     }

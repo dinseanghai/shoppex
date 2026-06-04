@@ -83,6 +83,15 @@ class Snackbars {
     });
   }
 
+  static void loginFailed() {
+    _showGlassSnackbar(
+      title: 'Login Failed',
+      message: AppStrings.loginfailed,
+      // Using a vivid, bright green with 0.65 opacity to make it pop over the blur
+      baseColor: const Color(0xFFEF0000).withOpacity(0.5),
+    );
+  }
+
   static void showBackOnline() {
     _showGlassSnackbar(
       title: AppStrings.backOnlineTitle,

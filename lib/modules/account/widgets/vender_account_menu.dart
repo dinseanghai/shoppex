@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:shoppex/core/constants/app_size.dart';
 import 'package:shoppex/modules/account/widgets/switch_account_type.dart';
 import 'package:shoppex/modules/account/widgets/vender_user_profile.dart';
+import '../../../core/constants/app_colors.dart';
 import '../../../shared/widgets/custom_listtile.dart';
 import '../controllers/account_controller.dart';
 
@@ -15,9 +16,10 @@ class VenderAccountMenu extends GetView<AccountController> {
     bool isBiometricsEnabled = true;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.background,
+        scrolledUnderElevation: 0,
         title: const Text(
           'Account Settings',
           style: TextStyle(

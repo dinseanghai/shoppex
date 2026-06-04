@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-
 import '../../../routes/app_pages.dart';
 import '../../../shared/layouts/main_layout.dart';
 import '../../../shared/services/auth_service.dart';
 import 'package:get/get.dart';
-
 import '../../../shared/widgets/loading_widget.dart';
 
 class AccountController extends GetxController {

@@ -26,49 +26,9 @@ class MainLayoutController extends GetxController {
           Get.find<NetworkService>().activateNetworkChecking();
         }
       } catch (e) {
-        print("NetworkService injection safety catch: $e");
+        debugPrint("NetworkService injection safety catch: $e");
       }
     });
-  }
-
-  // Dynamic body screens based on user role
-  List<Widget> get bodyScreens {
-    final role = AuthService.userRole.value.toLowerCase();
-    if (isLoggedIn.value && (role == 'vender' || role == 'vendor')) {
-      return const [
-        HomeView(),
-        Center(child: Text("Orders Management Screen")), // Index 1
-        Center(child: Text("Products Catalog Screen")), // Index 2
-        AccountView(), // Index 3
-      ];
-    } else {
-      return const [
-        HomeView(),
-        Center(child: Text("Cart Screen Content")),
-        Center(child: Text("Search Screen Content")),
-        AccountView(),
-      ];
-    }
-  }
-
-  // Dynamic navigation bar items matching the role screens
-  List<BottomNavigationBarItem> get navItems {
-    final role = AuthService.userRole.value.toLowerCase();
-    if (isLoggedIn.value && (role == 'vender' || role == 'vendor')) {
-      return const [
-        BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: 'Home'),
-        BottomNavigationBarItem(icon: Icon(Icons.shopping_bag_outlined), activeIcon: Icon(Icons.shopping_bag), label: 'Orders'),
-        BottomNavigationBarItem(icon: Icon(Icons.inventory_2_outlined), activeIcon: Icon(Icons.inventory_2), label: 'Products'),
-        BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'Account'),
-      ];
-    } else {
-      return const [
-        BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: 'Home'),
-        BottomNavigationBarItem(icon: Icon(Icons.shopping_cart_outlined), activeIcon: Icon(Icons.shopping_cart), label: 'Cart'),
-        BottomNavigationBarItem(icon: Icon(Icons.search_outlined), activeIcon: Icon(Icons.search), label: 'Search'),
-        BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'Account'),
-      ];
-    }
   }
 
   void changeTab(int index) {
@@ -82,8 +42,47 @@ class MainLayoutController extends GetxController {
     }
     return true;
   }
+
+  // Pure data definition for Navigation Items
+  List<NavigationItemData> get navigationItems {
+    final role = AuthService.userRole.value.toLowerCase();
+
+    if (isLoggedIn.value && (role == 'vender' || role == 'vendor')) {
+      return [
+        NavigationItemData(icon: Icons.home_outlined, activeIcon: Icons.home, label: 'Home', screen: const HomeView()),
+        NavigationItemData(icon: Icons.shopping_bag_outlined, activeIcon: Icons.shopping_bag, label: 'Orders', screen: const Center(child: Text("Orders Management"))),
+        NavigationItemData(icon: Icons.inventory_2_outlined, activeIcon: Icons.inventory_2, label: 'Products', screen: const Center(child: Text("Products Catalog"))),
+        NavigationItemData(icon: Icons.person_outline, activeIcon: Icons.person, label: 'Account', screen: const AccountView()),
+      ];
+    } else {
+      return [
+        NavigationItemData(icon: Icons.home_outlined, activeIcon: Icons.home, label: 'Home', screen: const HomeView()),
+        NavigationItemData(icon: Icons.shopping_cart_outlined, activeIcon: Icons.shopping_cart, label: 'Cart', screen: const Center(child: Text("Cart Content"))),
+        NavigationItemData(icon: Icons.search_outlined, activeIcon: Icons.search, label: 'Search', screen: const Center(child: Text("Search Content"))),
+        NavigationItemData(icon: Icons.person_outline, activeIcon: Icons.person, label: 'Account', screen: const AccountView()),
+      ];
+    }
+  }
 }
 
+// Simple data class to couple Icon, Label, and Screen together safely
+class NavigationItemData {
+  final IconData icon;
+  final IconData activeIcon;
+  final String label;
+  final Widget screen;
+
+  NavigationItemData({
+    required this.icon,
+    required this.activeIcon,
+    required this.label,
+    required this.screen,
+  });
+}
+
+// ==========================================
+// VIEW (Modern Floating UI Built-In)
+// ==========================================
 class MainLayout extends StatelessWidget {
   const MainLayout({super.key});
 
@@ -91,37 +90,100 @@ class MainLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.put(MainLayoutController());
 
-    return Obx(
-          () => Scaffold(
-        backgroundColor: Colors.white,
-        // Removed custom AppBar layout as requested
+    return Obx(() {
+      final currentNavItems = controller.navigationItems;
+
+      // Safety check if dynamic switching changes list lengths
+      if (controller.currentIndex.value >= currentNavItems.length) {
+        controller.currentIndex.value = 0;
+      }
+
+      return Scaffold(
+        backgroundColor: const Color(0xFFF8F9FA), // Slightly off-white background looks better with floating cards
         appBar: null,
 
-        // Dynamic screens array handled safely via IndexedStack
+        // Dynamic screens handled securely via IndexedStack
         body: IndexedStack(
           index: controller.currentIndex.value,
-          children: controller.bodyScreens,
+          children: currentNavItems.map((item) => item.screen).toList(),
         ),
 
-        // Navigation bar remains visible if user is authenticated
+        // Modern Floating Bottom Navigation Bar
         bottomNavigationBar: controller.isLoggedIn.value
-            ? Container(
-          decoration: const BoxDecoration(
-            border: Border(top: BorderSide(color: Color(0xFFE5E5E5), width: 1)),
-          ),
-          child: BottomNavigationBar(
-            currentIndex: controller.currentIndex.value,
-            onTap: controller.changeTab,
-            type: BottomNavigationBarType.fixed,
-            backgroundColor: Colors.white,
-            selectedItemColor: Colors.blueAccent,
-            unselectedItemColor: const Color(0xFF666666),
-            elevation: 0,
-            items: controller.navItems,
+            ? SafeArea(
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+            margin: const EdgeInsets.only(bottom: 16, left: 20, right: 20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 20,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: List.generate(currentNavItems.length, (index) {
+                final isSelected = controller.currentIndex.value == index;
+                final item = currentNavItems[index];
+
+                return GestureDetector(
+                  onTap: () => controller.changeTab(index),
+                  behavior: HitTestBehavior.opaque,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeInOutCubic,
+                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? Colors.blueAccent.withOpacity(0.12)
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          isSelected ? item.activeIcon : item.icon,
+                          color: isSelected ? Colors.blueAccent : const Color(0xFF8E8E93),
+                          size: 22,
+                        ),
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 250),
+                          curve: Curves.easeInOutCubic,
+                          width: isSelected ? 8 : 0,
+                          child: const SizedBox(),
+                        ),
+                        // Smoothly clips/reveals text on active item
+                        AnimatedCrossFade(
+                          duration: const Duration(milliseconds: 200),
+                          firstChild: Text(
+                            item.label,
+                            style: const TextStyle(
+                              color: Colors.blueAccent,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
+                            ),
+                          ),
+                          secondChild: const SizedBox.shrink(),
+                          crossFadeState: isSelected
+                              ? CrossFadeState.showFirst
+                              : CrossFadeState.showSecond,
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+            ),
           ),
         )
             : null,
-      ),
-    );
+      );
+    });
   }
 }

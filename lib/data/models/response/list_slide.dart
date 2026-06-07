@@ -1,25 +1,25 @@
-class ListSlideResponse {
+class SlideShow {
   String? status;
   int? statusCode;
-  List<Data>? data;
+  List<SlideData>? data;
 
-  ListSlideResponse({this.status, this.statusCode, this.data});
+  SlideShow({this.status, this.statusCode, this.data});
 
-  ListSlideResponse.fromJson(Map<String, dynamic> json) {
+  SlideShow.fromJson(Map<String, dynamic> json) {
     status = json['status'];
     statusCode = json['status_code'];
     if (json['data'] != null) {
-      data = <Data>[];
+      data = <SlideData>[];
       json['data'].forEach((v) {
-        data!.add(new Data.fromJson(v));
+        data!.add(SlideData.fromJson(v));
       });
     }
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['status'] = this.status;
-    data['status_code'] = this.statusCode;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['status'] = status;
+    data['status_code'] = statusCode;
     if (this.data != null) {
       data['data'] = this.data!.map((v) => v.toJson()).toList();
     }
@@ -27,39 +27,36 @@ class ListSlideResponse {
   }
 }
 
-class Data {
+class SlideData {
   int? id;
   String? title;
   String? subtitle;
-  Null? description;
+  String? description;
   String? imageUrl;
   int? sortOrder;
+  String? status;
 
-  Data(
-      {this.id,
-        this.title,
-        this.subtitle,
-        this.description,
-        this.imageUrl,
-        this.sortOrder});
+  SlideData({this.id, this.title, this.subtitle, this.description, this.imageUrl, this.sortOrder, this.status});
 
-  Data.fromJson(Map<String, dynamic> json) {
+  SlideData.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     title = json['title'];
     subtitle = json['subtitle'];
     description = json['description'];
     imageUrl = json['image_url'];
     sortOrder = json['sort_order'];
+    status = json['status'];
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['title'] = this.title;
-    data['subtitle'] = this.subtitle;
-    data['description'] = this.description;
-    data['image_url'] = this.imageUrl;
-    data['sort_order'] = this.sortOrder;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['title'] = title;
+    data['subtitle'] = subtitle;
+    data['description'] = description;
+    data['image_url'] = imageUrl;
+    data['sort_order'] = sortOrder;
+    data['status'] = status;
     return data;
   }
 }

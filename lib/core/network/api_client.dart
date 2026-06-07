@@ -5,10 +5,12 @@ import 'package:shoppex/core/config/app_config.dart';
 import 'package:shoppex/core/network/api_endpoints.dart';
 import 'package:shoppex/data/models/request/login_model.dart';
 import 'package:shoppex/data/models/request/reset_password.dart';
+import 'package:shoppex/data/models/response/list_category.dart';
 import '../../data/models/request/forget_password.dart';
 import '../../data/models/request/otp_model.dart';
 import '../../data/models/request/register_model.dart';
 import '../../data/models/request/resent_otp_model.dart';
+import '../../data/models/response/list_slide.dart';
 
 
 class ApiClient extends GetxService {
@@ -71,5 +73,12 @@ class ApiClient extends GetxService {
     return await _dio.post(ApiEndpoints.resetpassword, data: req.toJson());
   }
 
+  Future<Response<dynamic>> listslideshow(SlideShow res) async {
+    return await _dio.get(ApiEndpoints.listslideshow, data:  res.toJson());
+  }
+
+  Future<Response<dynamic>> listcategory(ListCategory res) async {
+    return await _dio.get(ApiEndpoints.listcategory, data: res.toJson());
+  }
 }
 

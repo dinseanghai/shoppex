@@ -14,7 +14,7 @@ class UserProfileHeader extends GetView<AccountController> {
     // Sophisticated Light Gray / Slate-Platinum Gradient
     const List<Color> headerGradientColors = [
       Color(0xFF4A65FF), // Vibrant blue on the left
-      Color(0xFF94A6FD), // Slightly lighter blue on the right
+      Color(0xFF7286E4), // Slightly lighter blue on the right
     ];
 
     return Column(

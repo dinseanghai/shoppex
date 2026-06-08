@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shoppex/core/constants/app_size.dart';
 import 'package:shoppex/modules/account/widgets/switch_account_type.dart';
-import 'package:shoppex/modules/account/widgets/vender_user_profile.dart';
-import '../../../core/constants/app_colors.dart';
-import '../../../shared/widgets/custom_listtile.dart';
-import '../controllers/account_controller.dart';
+import 'package:shoppex/modules/account/widgets/vender/user_profile.dart';
+import '../../../../core/constants/app_colors.dart';
+import '../../../../shared/widgets/custom_listtile.dart';
+import '../../controllers/account_controller.dart';
 
 class VenderAccountMenu extends GetView<AccountController> {
   const VenderAccountMenu({Key? key}) : super(key: key);

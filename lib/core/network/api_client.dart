@@ -6,6 +6,7 @@ import 'package:shoppex/core/network/api_endpoints.dart';
 import 'package:shoppex/data/models/request/login_model.dart';
 import 'package:shoppex/data/models/request/reset_password.dart';
 import 'package:shoppex/data/models/response/list_category.dart';
+import 'package:shoppex/data/models/response/list_store.dart';
 import '../../data/models/request/forget_password.dart';
 import '../../data/models/request/otp_model.dart';
 import '../../data/models/request/register_model.dart';
@@ -79,6 +80,14 @@ class ApiClient extends GetxService {
 
   Future<Response<dynamic>> listcategory(ListCategory res) async {
     return await _dio.get(ApiEndpoints.listcategory, data: res.toJson());
+  }
+
+  Future<Response<dynamic>> liststore(ListStore res) async {
+    return await _dio.get(ApiEndpoints.liststore, data: res.toJson());
+  }
+
+  Future<Response<dynamic>> favonstore(int storeId) async {
+    return await _dio.post('${ApiEndpoints.favonstore}/$storeId/favorite');
   }
 }
 

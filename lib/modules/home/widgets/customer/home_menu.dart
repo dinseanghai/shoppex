@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shoppex/core/constants/app_colors.dart';
 import 'package:shoppex/modules/home/controllers/home_controller.dart';
+import 'package:shoppex/modules/home/widgets/customer/list_store.dart';
 import 'package:shoppex/modules/home/widgets/customer/slide_show_view.dart';
 
 import '../../../../data/models/response/list_category.dart';
@@ -17,6 +18,7 @@ class CustomerHomeMenu extends GetView<HomeController> {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
+        scrolledUnderElevation: 0.0,
         automaticallyImplyLeading: false,
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -48,45 +50,10 @@ class CustomerHomeMenu extends GetView<HomeController> {
               buildSectionTitle('Featured Stores', () {
                 controller.featuredStoreClick();
               }),
-
-              // const Text(
-              //   'Trending Products',
-              //   style: TextStyle(
-              //     fontSize: 18,
-              //     fontWeight: FontWeight.bold,
-              //     color: Colors.black87,
-              //   ),
-              // ),
-              // const SizedBox(height: 10),
-              // Card(
-              //   elevation: 2,
-              //   shape: RoundedRectangleBorder(
-              //     borderRadius: BorderRadius.circular(12),
-              //   ),
-              //   child: ListTile(
-              //     leading: Container(
-              //       width: 50,
-              //       height: 50,
-              //       decoration: BoxDecoration(
-              //         color: Colors.grey[300],
-              //         borderRadius: BorderRadius.circular(8),
-              //       ),
-              //       child: const Icon(Icons.image, color: Colors.grey),
-              //     ),
-              //     title: const Text('Premium Wireless Headphones'),
-              //     subtitle: const Text(
-              //       '\$149.00',
-              //       style: TextStyle(
-              //         color: Colors.blue,
-              //         fontWeight: FontWeight.w600,
-              //       ),
-              //     ),
-              //     trailing: IconButton(
-              //       icon: const Icon(Icons.favorite_border, color: Colors.grey),
-              //       onPressed: () => controller.onAddToFavoriteClick(),
-              //     ),
-              //   ),
-              // ),
+              ListStoreView(),
+              buildSectionTitle('Trending Products', () {
+                controller.trendingProductClick();
+              }),
             ],
           ),
         ),

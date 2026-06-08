@@ -36,6 +36,7 @@ class CategoryHorizontalList extends GetView<HomeController> {
             final category = controller.categories[index];
             return GestureDetector(
               onTap: () {
+                controller.onCategoryClick();
                 debugPrint("Selected category: ${category.name}");
               },
               child: SizedBox(

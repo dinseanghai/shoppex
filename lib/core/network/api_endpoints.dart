@@ -10,4 +10,6 @@ class ApiEndpoints {
   static String get resetpassword => '${AppConfig.baseUrl}/api/v1/auth/reset-password';
   static String get listslideshow => '${AppConfig.baseUrl}/api/v1/slide-shows';
   static String get listcategory => '${AppConfig.baseUrl}/api/v1/categories';
+  static String get liststore => '${AppConfig.baseUrl}/api/v1/stores';
+  static String get favonstore => '${AppConfig.baseUrl}/api/v1/stores/40/favorite';
 }

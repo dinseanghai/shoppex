@@ -33,7 +33,7 @@ class SlideShowView extends GetView<HomeController> {
           CarouselSlider.builder(
             itemCount: activeSlides.length,
             options: CarouselOptions(
-              height: 200,
+              height: 180,
               viewportFraction: 1,
               enlargeCenterPage: false,
               autoPlay: true,

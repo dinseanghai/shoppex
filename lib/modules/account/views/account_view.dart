@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/account_controller.dart';
-import '../widgets/customer_account_menu.dart';
-import '../widgets/vender_account_menu.dart';
+import '../widgets/customer/account_menu.dart';
+import '../widgets/vender/account_menu.dart';
 
 class AccountView extends GetView<AccountController> {
   const AccountView({Key? key}) : super(key: key);

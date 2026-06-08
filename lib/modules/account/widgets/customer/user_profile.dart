@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../controllers/account_controller.dart';
+import '../../controllers/account_controller.dart';
 
 class UserProfileHeader extends GetView<AccountController> {
   const UserProfileHeader({super.key});

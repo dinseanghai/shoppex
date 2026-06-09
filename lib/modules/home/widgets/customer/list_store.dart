@@ -39,7 +39,7 @@ class ListStoreView extends GetView<HomeController> {
   }
 
   // Individual Store Card Widget
-  Widget _buildStoreCard(Lists store, int index) {
+  Widget _buildStoreCard(StoreItem store, int index) {
     return Container(
       width: 260,
       margin: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 4.0),
@@ -68,7 +68,6 @@ class ListStoreView extends GetView<HomeController> {
               Stack(
                 clipBehavior: Clip.none,
                 children: [
-                  // Banner Image Display or Fallback Container
                   store.banner != null && store.banner!.isNotEmpty
                       ? Image.network(
                     store.banner!,
@@ -78,15 +77,16 @@ class ListStoreView extends GetView<HomeController> {
                     errorBuilder: (context, error, stackTrace) => _buildBannerPlaceholder(),
                   )
                       : _buildBannerPlaceholder(),
-          
+
                   // Add to Favorite Button (Top Right Overlay)
                   Positioned(
                     top: 8,
                     right: 8,
                     child: Obx(() {
                       final storeId = store.id;
-                      // Check if THIS specific store is actively communicating with backend
+                      // 🟢 Listens to reactive list changes
                       final isUpdating = controller.favoriteStoreIds.contains(storeId);
+                      final isFav = store.isFav ?? false;
 
                       return GestureDetector(
                         onTap: isUpdating ? null : () => controller.onStoreFavoriteClick(store),
@@ -102,19 +102,19 @@ class ListStoreView extends GetView<HomeController> {
                             height: 18,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B59F6)), // Theme Blue
+                              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B59F6)),
                             ),
                           )
                               : Icon(
-                            (store.isFav ?? false) ? Icons.favorite : Icons.favorite_border,
-                            color: (store.isFav ?? false) ? Colors.red : Colors.grey.shade700,
+                            isFav ? Icons.favorite : Icons.favorite_border,
+                            color: isFav ? Colors.red : Colors.grey.shade700,
                             size: 18,
                           ),
                         ),
                       );
                     }),
                   ),
-          
+
                   // Floating Logo Circle/Square
                   Positioned(
                     left: 12,
@@ -147,8 +147,8 @@ class ListStoreView extends GetView<HomeController> {
                   ),
                 ],
               ),
-              const SizedBox(height: 24), // Space allocated for floating logo row
-          
+              const SizedBox(height: 24),
+
               // Store Info Details Footer
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12.0),
@@ -156,12 +156,10 @@ class ListStoreView extends GetView<HomeController> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // Text elements block
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Store Name row (Name + Verified Icon if true)
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -188,8 +186,7 @@ class ListStoreView extends GetView<HomeController> {
                             ],
                           ),
                           const SizedBox(height: 2),
-          
-                          // Store Description Block
+
                           Text(
                             store.description ?? 'No description available',
                             maxLines: 1,
@@ -203,7 +200,7 @@ class ListStoreView extends GetView<HomeController> {
                       ),
                     ),
                     const SizedBox(width: 8),
-          
+
                     // Visit Action Button
                     SizedBox(
                       height: 32,
@@ -212,7 +209,7 @@ class ListStoreView extends GetView<HomeController> {
                           controller.onListStoreVisit();
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF3B59F6), // Vibrant Blue
+                          backgroundColor: const Color(0xFF3B59F6),
                           foregroundColor: Colors.white,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
@@ -221,7 +218,7 @@ class ListStoreView extends GetView<HomeController> {
                         ),
                         child: const Text(
                           'Visit',
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600), // 🟢 Scaled down text size
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                         ),
                       ),
                     )

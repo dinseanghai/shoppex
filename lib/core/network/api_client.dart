@@ -7,10 +7,12 @@ import 'package:shoppex/data/models/request/login_model.dart';
 import 'package:shoppex/data/models/request/reset_password.dart';
 import 'package:shoppex/data/models/response/list_category.dart';
 import 'package:shoppex/data/models/response/list_store.dart';
+import '../../data/local/secure_storage.dart';
 import '../../data/models/request/forget_password.dart';
 import '../../data/models/request/otp_model.dart';
 import '../../data/models/request/register_model.dart';
 import '../../data/models/request/resent_otp_model.dart';
+import '../../data/models/response/list_product.dart';
 import '../../data/models/response/list_slide.dart';
 
 
@@ -36,6 +38,18 @@ class ApiClient extends GetxService {
         headers: {
           'Content-Type': "application/json",
           'Accept': "application/json",
+        },
+      ),
+    );
+
+    _dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          final cachedToken = SecureStorage.token;
+          if (cachedToken != null && cachedToken.isNotEmpty) {
+            options.headers['Authorization'] = 'Bearer $cachedToken';
+          }
+          return handler.next(options);
         },
       ),
     );
@@ -88,6 +102,10 @@ class ApiClient extends GetxService {
 
   Future<Response<dynamic>> favonstore(int storeId) async {
     return await _dio.post('${ApiEndpoints.favonstore}/$storeId/favorite');
+  }
+
+  Future<Response<dynamic>> listproduct(ListProduct res) async {
+    return await _dio.get(ApiEndpoints.listprodusts, data: res.toJson());
   }
 }
 

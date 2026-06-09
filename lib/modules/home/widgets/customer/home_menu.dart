@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shoppex/core/constants/app_colors.dart';
 import 'package:shoppex/modules/home/controllers/home_controller.dart';
+import 'package:shoppex/modules/home/widgets/customer/list_product.dart';
 import 'package:shoppex/modules/home/widgets/customer/list_store.dart';
 import 'package:shoppex/modules/home/widgets/customer/slide_show_view.dart';
-
-import '../../../../data/models/response/list_category.dart';
 import 'list_category.dart';
 
 class CustomerHomeMenu extends GetView<HomeController> {
@@ -54,6 +53,7 @@ class CustomerHomeMenu extends GetView<HomeController> {
               buildSectionTitle('Trending Products', () {
                 controller.trendingProductClick();
               }),
+              //ListProductView(),
             ],
           ),
         ),

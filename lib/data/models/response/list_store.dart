@@ -1,14 +1,14 @@
 class ListStore {
   String? status;
   int? statusCode;
-  Data? storeData;
+  StoreData? storeData; // Changed from Data?
 
   ListStore({this.status, this.statusCode, this.storeData});
 
   ListStore.fromJson(Map<String, dynamic> json) {
     status = json['status'];
     statusCode = json['status_code'];
-    storeData = json['data'] != null ? new Data.fromJson(json['data']) : null;
+    storeData = json['data'] != null ? new StoreData.fromJson(json['data']) : null;
   }
 
   Map<String, dynamic> toJson() {
@@ -22,24 +22,25 @@ class ListStore {
   }
 }
 
-class Data {
+// Renamed from Data to StoreData
+class StoreData {
   int? currentPage;
   int? lastPage;
   int? perPage;
   int? total;
-  List<Lists>? lists;
+  List<StoreItem>? lists; // Changed from List<Lists>?
 
-  Data({this.currentPage, this.lastPage, this.perPage, this.total, this.lists});
+  StoreData({this.currentPage, this.lastPage, this.perPage, this.total, this.lists});
 
-  Data.fromJson(Map<String, dynamic> json) {
+  StoreData.fromJson(Map<String, dynamic> json) {
     currentPage = json['current_page'];
     lastPage = json['last_page'];
     perPage = json['per_page'];
     total = json['total'];
     if (json['lists'] != null) {
-      lists = <Lists>[];
+      lists = <StoreItem>[]; // Changed from Lists
       json['lists'].forEach((v) {
-        lists!.add(new Lists.fromJson(v));
+        lists!.add(new StoreItem.fromJson(v)); // Changed from Lists
       });
     }
   }
@@ -57,7 +58,8 @@ class Data {
   }
 }
 
-class Lists {
+// Renamed from Lists to StoreItem
+class StoreItem {
   int? id;
   String? name;
   String? slug;
@@ -70,7 +72,7 @@ class Lists {
   bool? isVerified;
   bool? isFav;
 
-  Lists(
+  StoreItem(
       {this.id,
         this.name,
         this.slug,
@@ -83,7 +85,7 @@ class Lists {
         this.isVerified,
         this.isFav});
 
-  Lists.fromJson(Map<String, dynamic> json) {
+  StoreItem.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     name = json['name'];
     slug = json['slug'];

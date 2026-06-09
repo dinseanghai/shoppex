@@ -1,23 +1,25 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shoppex/core/network/api_client.dart';
 import 'package:shoppex/shared/services/auth_service.dart';
 import '../../../data/models/response/list_category.dart';
+import '../../../data/models/response/list_product.dart';
 import '../../../data/models/response/list_slide.dart';
 import '../../../data/models/response/list_store.dart';
 import '../../../data/models/response/store_favorite.dart';
 import '../../../routes/app_pages.dart';
 import '../../../shared/layouts/main_layout.dart';
+import '../widgets/add_favorite_bottombar.dart';
 
 
 class HomeController extends GetxController {
   final ApiClient _apiClient = Get.find<ApiClient>();
 
-  var favoriteStoreIds = <int>{}.obs;
+  var favoriteStoreIds = <int>[].obs;
   var slideList = <SlideData>[].obs;
   var categories = <CategoryData>[].obs;
-  var storeList = <Lists>[].obs;
+  var storeList = <StoreItem>[].obs;
+  var productList = <ProductItem>[].obs;
   var currentIndex = 0.obs;
 
   var isLoading = false.obs;
@@ -41,6 +43,31 @@ class HomeController extends GetxController {
     fetchSlideShows();
     fetchCategories();
     fetchListStore();
+    fetchProduct();
+  }
+
+  Future<void> fetchProduct() async {
+    try {
+      isLoading(true);
+
+      // Pass a clean instance or handle query params if required by your ApiClient
+      final response = await _apiClient.listproduct(ListProduct());
+
+      if (response.statusCode == 200 && response.data != null) {
+        final productResponse = ListProduct.fromJson(response.data);
+
+        // productResponse.data holds the 'ProductData' type object
+        if (productResponse.productData != null && productResponse.productData?.lists != null) {
+          productList.assignAll(productResponse.productData!.lists!);
+        }
+      } else {
+        Get.snackbar("Error", "Failed to retrieve products");
+      }
+    } catch (e) {
+      debugPrint("Error fetching products: $e");
+    } finally {
+      isLoading(false);
+    }
   }
 
   Future<void> fetchListStore() async {
@@ -140,62 +167,71 @@ class HomeController extends GetxController {
     });
   }
 
-  void onStoreFavoriteClick(Lists store) {
+  void onStoreFavoriteClick(StoreItem store) {
+    final storeId = store.id;
+    if (storeId == null) return;
+
     handleProtectedAction(() async {
-      final storeId = store.id;
-      if (storeId == null) return;
-
-      // Prevent double-tapping the button while a request is in mid-air
-      if (favoriteStoreIds.contains(storeId)) return;
-
-      // Save current status for a rollback if the server network call fails
       final bool originalFavState = store.isFav ?? false;
+      final int itemIndex = storeList.indexWhere((element) => element.id == storeId);
 
       try {
-        // 1. Optimistic Update (UI changes instantly)
+        // 1. Instant Optimistic Update
         store.isFav = !originalFavState;
-        storeList.refresh();
-        favoriteStoreIds.add(storeId);
+        if (itemIndex != -1) {
+          storeList[itemIndex] = store;
+        }
 
-        // 2. Network Call
+        // 2. Network Request
         final response = await _apiClient.favonstore(storeId);
 
-        // 3. Strongly Typed Model Validation
+        // 3. Validate Response Payload
         if (response.statusCode == 200 && response.data != null) {
-
-          // 🟢 Parse response data directly into your Response Model
           final favResponse = StoreFavorite.fromJson(response.data);
 
           if (favResponse.status == 'success' || favResponse.statusCode == 200) {
-            // Sync state with what the backend explicitly returned
             store.isFav = favResponse.isFav ?? store.isFav;
 
-            Get.snackbar(
-              "Success",
-              favResponse.message ?? "Store updated.",
-              snackPosition: SnackPosition.TOP,
-              backgroundColor: Colors.green,
-              colorText: Colors.white,
-            );
+            // 🟢 4. Show customized Neo-Glass design matching your style requirements
+            if (store.isFav == true) {
+              // Image 1: Saved
+              showBottomBar(
+                icon: Icons.favorite,
+                isFavoriteActive: true,
+                message: "Add to Favourites",
+                actionText: "View Favourites",
+                onActionTap: () {
+                  // Get.toNamed(Routes.FAVOURITES);
+                },
+              );
+            } else {
+              // Image 2: Removed from Favourites
+              showBottomBar(
+                icon: Icons.favorite_border,
+                isFavoriteActive: false,
+                message: "Removed from Favourites",
+                actionText: "Undo",
+                onActionTap: () {
+                  onStoreFavoriteClick(store); // Recursively undo toggle
+                },
+              );
+            }
+
           } else {
-            // Backend sent an explicit failure flag inside the object body
             store.isFav = originalFavState;
-            Get.snackbar("Error", favResponse.message ?? "Could not complete update.");
+            showErrorBar(favResponse.message ?? "Could not complete update.");
           }
         } else {
-          // Server returned an HTTP status code other than 200 OK
           store.isFav = originalFavState;
-          Get.snackbar("Error", "Could not complete update.");
+          showErrorBar("Could not complete update.");
         }
       } catch (e) {
-        // Fallback on unexpected exceptions or network timeouts
         store.isFav = originalFavState;
-        Get.log("Favorite Error: $e");
-        Get.snackbar("Error", "Network connection issue.");
+        showErrorBar("Network connection issue.");
       } finally {
-        // Always remove loading state and refresh layout lists
-        favoriteStoreIds.remove(storeId);
-        storeList.refresh();
+        if (itemIndex != -1) {
+          storeList[itemIndex] = store;
+        }
       }
     });
   }

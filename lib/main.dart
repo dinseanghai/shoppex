@@ -8,6 +8,7 @@ import 'package:shoppex/shared/services/auth_service.dart';
 import 'package:shoppex/shared/services/network_service.dart';
 import 'app.dart';
 import 'core/network/network_info.dart';
+import 'data/local/secure_storage.dart';
 import 'flavors.dart';
 
 void main() async {
@@ -37,7 +38,7 @@ void main() async {
   // This step ensures the token is cached in memory BEFORE any routes calculate
   final authService = Get.find<AuthService>();
   await authService.initAuth();
-
+  await SecureStorage.init();
   // 5. Initialize the global network controller background layer.
   // Pinned down safely so it functions throughout the entire app lifespan.
   Get.put(NetworkService(), permanent: true);

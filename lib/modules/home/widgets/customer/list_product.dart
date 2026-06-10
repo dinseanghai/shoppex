@@ -9,64 +9,64 @@ class ListProductView extends GetView<HomeController> {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      // 1. Initial Page Skeletons (Only shows if it's the very first page loading)
+      // 1. Initial Page Skeletons
       if (controller.isLoading.value && controller.productList.isEmpty) {
-        return GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          padding: const EdgeInsets.symmetric(horizontal: 8),
+        return SliverGrid(
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
             childAspectRatio: 0.68,
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
           ),
-          itemCount: 4,
-          itemBuilder: (context, index) => const ProductSkeletonItem(),
+          delegate: SliverChildBuilderDelegate(
+            (context, index) => const ProductSkeletonItem(),
+            childCount: 4,
+          ),
         );
       }
 
-      // 2. Handling empty data array states
+      // 2. Empty State
       if (controller.productList.isEmpty) {
-        return const SizedBox(
-          height: 140,
-          child: Center(child: Text('No products available')),
+        return const SliverToBoxAdapter(
+          child: SizedBox(
+            height: 140,
+            child: Center(child: Text('No products available')),
+          ),
         );
       }
 
-      // 3. Grid layout wrapped in a Column to append the trailing loader cleanly
-      return Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(), // Passes scroll context up to the Home Screen's SingleChildScrollView
-            padding: const EdgeInsets.symmetric(horizontal: 8),
+      // 3. Main Data Content
+      // 🟢 Fixed: Added the required 'slivers:' parameter name here
+      return SliverMainAxisGroup(
+        slivers: [
+          SliverGrid(
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
               childAspectRatio: 0.68,
               crossAxisSpacing: 16,
               mainAxisSpacing: 16,
             ),
-            itemCount: controller.productList.length,
-            itemBuilder: (context, index) {
-              // 🟢 Fixed: Reverted back to map products rather than mismatched stores
+            delegate: SliverChildBuilderDelegate((context, index) {
               final ProductItem product = controller.productList[index];
               return ProductCardItem(product: product);
-            },
+            }, childCount: controller.productList.length),
           ),
 
-          // 🔄 Appends the progress indicator at the bottom of the grid when page 2+ is loading
+          // 🔄 Smooth loader insertion inside the sliver space
           if (controller.isMoreLoading.value)
-            const Padding(
-              padding: EdgeInsets.only(top: 24.0, bottom: 32.0),
-              child: Center(
-                child: SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.5,
-                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B59F6)),
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.only(top: 24.0, bottom: 32.0),
+                child: Center(
+                  child: SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        Color(0xFF3B59F6),
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -80,10 +80,7 @@ class ListProductView extends GetView<HomeController> {
 class ProductCardItem extends GetView<HomeController> {
   final ProductItem product;
 
-  const ProductCardItem({
-    Key? key,
-    required this.product,
-  }) : super(key: key);
+  const ProductCardItem({Key? key, required this.product}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -108,18 +105,19 @@ class ProductCardItem extends GetView<HomeController> {
                   color: const Color(0xFFF6F6F6),
                   child: product.thumbnail != null || product.image != null
                       ? Image.network(
-                    product.thumbnail ?? product.image!,
-                    fit: BoxFit.cover,
-                    errorBuilder: (c, e, s) => const Icon(
-                      Icons.broken_image,
-                      size: 40,
-                      color: Colors.grey,
-                    ),
-                  )
+                          product.thumbnail ?? product.image!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (c, e, s) => const Icon(
+                            Icons.broken_image,
+                            size: 40,
+                            color: Colors.grey,
+                          ),
+                        )
                       : const Icon(Icons.image, size: 40, color: Colors.grey),
                 ),
               ),
-              if (product.discountPercent != null && product.discountPercent! > 0)
+              if (product.discountPercent != null &&
+                  product.discountPercent! > 0)
                 Positioned(
                   top: 12,
                   left: 12,
@@ -149,7 +147,9 @@ class ProductCardItem extends GetView<HomeController> {
                 right: 8,
                 child: Obx(() {
                   final productId = product.id;
-                  final isUpdating = controller.favoriteProductIds.contains(productId);
+                  final isUpdating = controller.favoriteProductIds.contains(
+                    productId,
+                  );
                   final isFav = product.isFavorite == true;
 
                   return GestureDetector(
@@ -164,18 +164,20 @@ class ProductCardItem extends GetView<HomeController> {
                       ),
                       child: isUpdating
                           ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B59F6)),
-                        ),
-                      )
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Color(0xFF3B59F6),
+                                ),
+                              ),
+                            )
                           : Icon(
-                        isFav ? Icons.favorite : Icons.favorite_border,
-                        color: isFav ? Colors.red : Colors.black45,
-                        size: 18,
-                      ),
+                              isFav ? Icons.favorite : Icons.favorite_border,
+                              color: isFav ? Colors.red : Colors.black45,
+                              size: 18,
+                            ),
                     ),
                   );
                 }),

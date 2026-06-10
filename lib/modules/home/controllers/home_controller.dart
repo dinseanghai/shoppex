@@ -43,7 +43,6 @@ class HomeController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    // 🟢 Use ever() to listen to authentication changes dynamically
     ever(AuthService.isAuthenticated, (_) => checkUserStatus());
     checkUserStatus();
     setupHomeScrollListener();
@@ -55,22 +54,24 @@ class HomeController extends GetxController {
 
   void setupHomeScrollListener() {
     homeScrollController.addListener(() {
-      double maxScroll = homeScrollController.position.maxScrollExtent;
-      double currentScroll = homeScrollController.position.pixels;
+      // 1. Guard against firing if we are already communicating with the backend API
+      if (isLoading.value || isMoreLoading.value) return;
 
-      // 💡 Check your running debug console to see this text dynamically update!
-      debugPrint("Screen Moving -> Position: ${currentScroll.toInt()} / Max: ${maxScroll.toInt()}");
+      final position = homeScrollController.position;
+      double maxScroll = position.maxScrollExtent;
+      double currentScroll = position.pixels;
 
-      // Triggers when you are within 200 logical pixels of the bottom border
-      if (maxScroll - currentScroll <= 200) {
-        if (!isLoading.value && !isMoreLoading.value && currentPage < lastPage) {
 
-          debugPrint("🟢 Bottom Hit! Running pagination for page: ${currentPage + 1}");
+      // 2. Trigger if within 250 pixels of bottom OR if physics bounced hard right to the max border limit
+      bool isNearBottom = (maxScroll - currentScroll) <= 250;
+      bool isAtAbsoluteBottom = currentScroll >= maxScroll && !position.outOfRange;
 
+      if (isNearBottom || isAtAbsoluteBottom) {
+        if (currentPage < lastPage) {
+          // Use a microtask frame lock to ensure page values don't split-trigger requests
           handleProtectedAction(() {
             fetchProduct(page: currentPage + 1);
           });
-
         }
       }
     });

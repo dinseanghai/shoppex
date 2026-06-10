@@ -12,6 +12,12 @@ class CustomerHomeMenu extends GetView<HomeController> {
 
   @override
   Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (controller.homeScrollController.hasClients) {
+        // Clear out duplicates and jump-start the listener manually
+        controller.setupHomeScrollListener();
+      }
+    });
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -29,35 +35,47 @@ class CustomerHomeMenu extends GetView<HomeController> {
       ),
 
       body: SafeArea(
-        child: SingleChildScrollView(
+        child: CustomScrollView(
           controller: controller.homeScrollController,
-          padding: const EdgeInsets.symmetric(horizontal: 18.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 4),
-              buildUserAddress(),
-              const SizedBox(height: 10),
-              buildSearchSection(),
-              const SizedBox(height: 12),
-              SlideShowView(),
-              const SizedBox(height: 6),
-              buildSectionTitle('Shop by Category', () {
-                controller.seeAllCategoryClick();
-              }),
-              const SizedBox(height: 10),
-              const CategoryHorizontalList(),
-              buildSectionTitle('Featured Stores', () {
-                controller.featuredStoreClick();
-              }),
-              ListStoreView(),
-              buildSectionTitle('Trending Products', () {
-                controller.trendingProductClick();
-              }),
-              const SizedBox(height: 6),
-              ListProductView(),
-            ],
-          ),
+          slivers: [
+            // 🟢 Changed from SliverPadding to SliverToBoxAdapter for the top sections
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 18.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 4),
+                    buildUserAddress(),
+                    const SizedBox(height: 10),
+                    buildSearchSection(),
+                    const SizedBox(height: 12),
+                    SlideShowView(),
+                    const SizedBox(height: 6),
+                    buildSectionTitle('Shop by Category', () {
+                      controller.seeAllCategoryClick();
+                    }),
+                    const SizedBox(height: 10),
+                    const CategoryHorizontalList(),
+                    buildSectionTitle('Featured Stores', () {
+                      controller.featuredStoreClick();
+                    }),
+                    ListStoreView(),
+                    buildSectionTitle('Trending Products', () {
+                      controller.trendingProductClick();
+                    }),
+                    const SizedBox(height: 6),
+                  ],
+                ),
+              ),
+            ),
+
+            // 🟢 The product grid lives dynamically down here as its own sliver!
+            const SliverPadding(
+              padding: EdgeInsets.symmetric(horizontal: 18.0),
+              sliver: ListProductView(), // ListProductView returns a Sliver/Multi-Sliver
+            ),
+          ],
         ),
       ),
     );

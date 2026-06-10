@@ -1,10 +1,12 @@
 import 'package:get/get.dart';
 
 import '../modules/account/bindings/account_binding.dart';
+import '../modules/account/controllers/account_controller.dart';
 import '../modules/account/views/account_view.dart';
 import '../modules/forget_password/bindings/forget_password_binding.dart';
 import '../modules/forget_password/views/forget_password_view.dart';
 import '../modules/home/bindings/home_binding.dart';
+import '../modules/home/controllers/home_controller.dart';
 import '../modules/home/views/home_view.dart';
 import '../modules/onboarding/bindings/onboarding_binding.dart';
 import '../modules/onboarding/views/onboarding_view.dart';
@@ -32,11 +34,12 @@ class AppPages {
     GetPage(
       name: _Paths.MAIN_LAYOUT,
       page: () => const MainLayout(),
-      bindings: [
-        HomeBinding(),
-        AccountBinding(),
-        BindingsBuilder(() => Get.lazyPut(() => MainLayoutController())),
-      ],
+      binding: BindingsBuilder(() {
+        // 🟢 Using permanent: true tells GetX: "Do not let background route flushes kill this instance!"
+        Get.put(HomeController(), permanent: true);
+        Get.put(AccountController(), permanent: true);
+        Get.lazyPut(() => MainLayoutController());
+      }),
     ),
     GetPage(
       name: _Paths.HOME,

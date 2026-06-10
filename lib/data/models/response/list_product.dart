@@ -1,22 +1,29 @@
 class ListProduct {
   String? status;
   int? statusCode;
-  ProductData? productData; // Changed from Data?
+  ProductData? productData;
+  int? page; // 👈 🟢 1. Added page variable parameter for pagination tracking
 
-  ListProduct({this.status, this.statusCode, this.productData});
+  // 2. Added to the optional constructor block parameters
+  ListProduct({this.status, this.statusCode, this.productData, this.page});
 
   ListProduct.fromJson(Map<String, dynamic> json) {
     status = json['status'];
     statusCode = json['status_code'];
-    productData = json['data'] != null ? new ProductData.fromJson(json['data']) : null;
+    productData = json['data'] != null ? ProductData.fromJson(json['data']) : null;
+    page = json['page']; // (Optional) maps back if returned from server
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['status'] = this.status;
-    data['status_code'] = this.statusCode;
-    if (this.productData != null) {
-      data['data'] = this.productData!.toJson();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['status'] = status;
+    data['status_code'] = statusCode;
+    if (productData != null) {
+      data['data'] = productData!.toJson();
+    }
+    // 3. 🟢 Packing 'page' into the dynamic map conversion payload out to Dio
+    if (page != null) {
+      data['page'] = page;
     }
     return data;
   }
@@ -28,7 +35,7 @@ class ProductData {
   int? lastPage;
   int? perPage;
   int? total;
-  List<ProductItem>? lists; // Changed from List<Lists>?
+  List<ProductItem>? lists;
 
   ProductData({this.currentPage, this.lastPage, this.perPage, this.total, this.lists});
 
@@ -38,21 +45,21 @@ class ProductData {
     perPage = json['per_page'];
     total = json['total'];
     if (json['lists'] != null) {
-      lists = <ProductItem>[]; // Changed from Lists
+      lists = <ProductItem>[];
       json['lists'].forEach((v) {
-        lists!.add(new ProductItem.fromJson(v)); // Changed from Lists
+        lists!.add(ProductItem.fromJson(v));
       });
     }
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['current_page'] = this.currentPage;
-    data['last_page'] = this.lastPage;
-    data['per_page'] = this.perPage;
-    data['total'] = this.total;
-    if (this.lists != null) {
-      data['lists'] = this.lists!.map((v) => v.toJson()).toList();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['current_page'] = currentPage;
+    data['last_page'] = lastPage;
+    data['per_page'] = perPage;
+    data['total'] = total;
+    if (lists != null) {
+      data['lists'] = lists!.map((v) => v.toJson()).toList();
     }
     return data;
   }
@@ -72,18 +79,19 @@ class ProductItem {
   String? thumbnail;
   bool? isFavorite;
 
-  ProductItem(
-      {this.id,
-        this.name,
-        this.slug,
-        this.basePrice,
-        this.salePrice,
-        this.discountPercent,
-        this.ratingAvg,
-        this.ratingCount,
-        this.image,
-        this.thumbnail,
-        this.isFavorite});
+  ProductItem({
+    this.id,
+    this.name,
+    this.slug,
+    this.basePrice,
+    this.salePrice,
+    this.discountPercent,
+    this.ratingAvg,
+    this.ratingCount,
+    this.image,
+    this.thumbnail,
+    this.isFavorite,
+  });
 
   ProductItem.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -100,18 +108,18 @@ class ProductItem {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['name'] = this.name;
-    data['slug'] = this.slug;
-    data['base_price'] = this.basePrice;
-    data['sale_price'] = this.salePrice;
-    data['discount_percent'] = this.discountPercent;
-    data['rating_avg'] = this.ratingAvg;
-    data['rating_count'] = this.ratingCount;
-    data['image'] = this.image;
-    data['thumbnail'] = this.thumbnail;
-    data['is_favorite'] = this.isFavorite;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['name'] = name;
+    data['slug'] = slug;
+    data['base_price'] = basePrice;
+    data['sale_price'] = salePrice;
+    data['discount_percent'] = discountPercent;
+    data['rating_avg'] = ratingAvg;
+    data['rating_count'] = ratingCount;
+    data['image'] = image;
+    data['thumbnail'] = thumbnail;
+    data['is_favorite'] = isFavorite;
     return data;
   }
 }

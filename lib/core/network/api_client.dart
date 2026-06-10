@@ -107,5 +107,8 @@ class ApiClient extends GetxService {
   Future<Response<dynamic>> listproduct(ListProduct res) async {
     return await _dio.get(ApiEndpoints.listprodusts, data: res.toJson());
   }
+  Future<Response<dynamic>> favOnProduct(int productId) async {
+    return await _dio.post('${ApiEndpoints.favonproduct}/$productId/favorite');
+  }
 }
 

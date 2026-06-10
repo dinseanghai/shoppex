@@ -11,14 +11,14 @@ class ListStoreView extends GetView<HomeController> {
     return Obx(() {
       if (controller.isLoading.value) {
         return const SizedBox(
-          height: 180,
+          height: 140,
           child: Center(child: CircularProgressIndicator()),
         );
       }
 
       if (controller.storeList.isEmpty) {
         return const SizedBox(
-          height: 180,
+          height: 140,
           child: Center(child: Text('No featured stores available.')),
         );
       }

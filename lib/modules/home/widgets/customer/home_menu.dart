@@ -30,6 +30,7 @@ class CustomerHomeMenu extends GetView<HomeController> {
 
       body: SafeArea(
         child: SingleChildScrollView(
+          controller: controller.homeScrollController,
           padding: const EdgeInsets.symmetric(horizontal: 18.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -53,7 +54,8 @@ class CustomerHomeMenu extends GetView<HomeController> {
               buildSectionTitle('Trending Products', () {
                 controller.trendingProductClick();
               }),
-              //ListProductView(),
+              const SizedBox(height: 6),
+              ListProductView(),
             ],
           ),
         ),

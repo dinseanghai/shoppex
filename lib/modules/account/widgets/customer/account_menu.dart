@@ -13,81 +13,165 @@ class CustomerAccountMenu extends GetView<AccountController> {
   @override
   Widget build(BuildContext context) {
     const double horizontalPadding = 20.0;
-
-    // Status bar adjustment variables
     final double statusBarHeight = MediaQuery.of(context).padding.top;
-    const double appBarHeight = kToolbarHeight;
-    const double totalHeaderHeight = 220.0;
+
+    // Exact structural measurements to match your design perfectly
+    const double blueBannerHeight = 150.0;
+    const double totalHeaderHeight = blueBannerHeight + 35; // Banner + half of avatar overlap
 
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       body: AnnotatedRegion<SystemUiOverlayStyle>(
-        // Forces light text/icons in the status bar over your blue background
         value: const SystemUiOverlayStyle(
           statusBarColor: Colors.transparent,
           statusBarIconBrightness: Brightness.light,
           statusBarBrightness: Brightness.dark,
         ),
-        child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            // 1. STICKY / PINNED HEADER
-            SliverAppBar(
-              pinned: true,
-              expandedHeight: totalHeaderHeight,
-              toolbarHeight: appBarHeight,
-              backgroundColor: const Color(0xFF4A65FF), // Fallback base color
-              elevation: 0,
-              // Hides standard back/menu items if unnecessary
-              automaticallyImplyLeading: false,
-              titleSpacing: 0,
+        child: Stack(
+          children: [
 
-              // Custom Action Header Overlay
-              title: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: NavigationToolbar(
-                  middle: const Text(
-                    'My Account',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
+            // =========================================================
+            // 1. THE SCROLLABLE CONTENT (Name, Email, Settings Lists)
+            // Sits at the bottom layer so it slides UNDER the header
+            // =========================================================
+            Positioned.fill(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Column(
+                  children: [
+                    // This empty space keeps text content below your fixed header on load
+                    SizedBox(height: totalHeaderHeight + statusBarHeight + 16),
+
+                    // ---- SCROLLABLE USER DETAILS & MENUS ----
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: horizontalPadding),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const UserProfileHeader(),
+
+                          const SizedBox(height: 16),
+
+                          SwitchAccountType(
+                            icon: Icons.storefront_outlined,
+                            title: 'Become a Seller',
+                            description: 'Start selling and reach millions of customers',
+                            onTap: () {},
+                          ),
+                          const SizedBox(height: 24),
+
+                          // Organized Settings Blocks
+                          _buildMenuSection(
+                            title: 'Account Settings',
+                            items: [
+                              CustomListtile(icon: Icons.person_2_outlined, title: 'Personal Information', subtitle: 'Update your details', onTap: () {}),
+                              CustomListtile(icon: Icons.shield_outlined, title: 'Privacy & Security', subtitle: 'Password, 2FA', onTap: () {}),
+                            ],
+                          ),
+                          _buildMenuSection(
+                            title: 'Preferences',
+                            items: [
+                              CustomListtile(icon: Icons.notifications_none_outlined, title: 'Notifications', subtitle: 'Manage your alerts', onTap: () {}),
+                              CustomListtile(icon: Icons.language_outlined, title: 'Language', subtitle: 'Get from secure storage', onTap: () {}),
+                              CustomListtile(icon: Icons.dark_mode_outlined, title: 'Appearance', subtitle: 'Get from secure storage', onTap: () {}),
+                            ],
+                          ),
+
+                          _buildMenuSection(
+                            title: 'Support',
+                            items: [
+                              CustomListtile(icon: Icons.help_outline_outlined, title: 'Help Center', subtitle: 'FAQs and support', onTap: () {}),
+                              CustomListtile(icon: Icons.article_outlined, title: 'Term & Policies', subtitle: 'Legal information', onTap: () {}),
+                            ],
+                          ),
+
+
+
+                          // Sign Out Option
+                          CustomListtile(
+                            icon: Icons.logout_rounded,
+                            title: 'Sign Out',
+                            iconColor: Colors.redAccent,
+                            iconBgColor: const Color(0xFFFFF1F1),
+                            showTrailing: false,
+                            onTap: () => controller.confirmLogout(),
+                          ),
+
+                          const SizedBox(height: 10), // Extra cushion so bottom items clear nav bars
+                        ],
+                      ),
                     ),
-                  ),
-                  trailing: IconButton(
-                    onPressed: controller.onEditProfilePressed,
-                    icon: const Icon(
-                      Icons.settings_outlined,
-                      color: Colors.white,
-                      size: 22,
-                    ),
-                  ),
+                  ],
                 ),
               ),
+            ),
 
-              // The Blue Background & Avatar Stack
-              flexibleSpace: FlexibleSpaceBar(
-                background: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    // Blue Banner (Extends all the way up through the status bar)
-                    Container(
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [Color(0xFF4A65FF), Color(0xFF7286E4)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.only(
-                          bottomLeft: Radius.circular(32),
-                          bottomRight: Radius.circular(32),
+            // =========================================================
+            // 2. FIXED FOREGROUND LAYER (Blue Background + Profile Avatar)
+            // Placed at the bottom of the Stack so it renders ON TOP of scrolling text
+            // =========================================================
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              height: totalHeaderHeight + statusBarHeight,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  // Blue Gradient Banner
+                  Container(
+                    height: blueBannerHeight + statusBarHeight,
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Color(0xFF4A65FF), Color(0xFF7286E4)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(32),
+                        bottomRight: Radius.circular(32),
+                      ),
+                    ),
+                    child: SafeArea(
+                      bottom: false,
+                      child: Align(
+                        alignment: Alignment.topCenter,
+                        child: Container(
+                          height: kToolbarHeight,
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const SizedBox(width: 40), // Balances settings icon alignment
+                              const Text(
+                                'My Account',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              IconButton(
+                                onPressed: controller.onEditProfilePressed,
+                                icon: const Icon(
+                                  Icons.settings_outlined,
+                                  color: Colors.white,
+                                  size: 24,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
+                  ),
 
-                    // Floating Profile Avatar Frame
-                    Positioned(
-                      bottom: 0,
+                  // Fixed Profile Avatar (Layered strictly inside the fixed top stack)
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    child: Center(
                       child: Container(
                         padding: const EdgeInsets.all(4),
                         decoration: const BoxDecoration(
@@ -113,6 +197,7 @@ class CustomerAccountMenu extends GetView<AccountController> {
                             backgroundImage: !hasNoImage
                                 ? NetworkImage(imagePath) as ImageProvider
                                 : null,
+                            // Changed the semicolon (;) to a comma (,) right here:
                             child: hasNoImage
                                 ? Icon(Icons.person, size: 48, color: Colors.grey[400])
                                 : null,
@@ -120,73 +205,8 @@ class CustomerAccountMenu extends GetView<AccountController> {
                         }),
                       ),
                     ),
-                  ],
-                ),
-              ),
-            ),
-
-            // 2. SCROLLABLE BODY CONTENT
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: horizontalPadding),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 16),
-
-                    // User Text details (Name, Badge, Email)
-                    const UserProfileInfoStrings(),
-
-                    const SizedBox(height: 24),
-
-                    // "Become a Seller" Action Card
-                    SwitchAccountType(
-                      icon: Icons.storefront_outlined,
-                      title: 'Become a Seller',
-                      description: 'Start selling and reach millions of customers',
-                      onTap: () {},
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // Organized Settings Blocks
-                    _buildMenuSection(
-                      title: 'Account Settings',
-                      items: [
-                        CustomListtile(icon: Icons.language_outlined, title: 'Language', subtitle: 'Get from secure storage', onTap: () {}),
-                        CustomListtile(icon: Icons.dark_mode_outlined, title: 'Appearance', subtitle: 'Get from secure storage', onTap: () {}),
-                      ],
-                    ),
-                    _buildMenuSection(
-                      title: 'Preferences',
-                      items: [
-                        CustomListtile(icon: Icons.language_outlined, title: 'Language', subtitle: 'Get from secure storage', onTap: () {}),
-                        CustomListtile(icon: Icons.dark_mode_outlined, title: 'Appearance', subtitle: 'Get from secure storage', onTap: () {}),
-                      ],
-                    ),
-                    _buildMenuSection(
-                      title: 'Support',
-                      items: [
-                        CustomListtile(icon: Icons.language_outlined, title: 'Language', subtitle: 'Get from secure storage', onTap: () {}),
-                        CustomListtile(icon: Icons.dark_mode_outlined, title: 'Appearance', subtitle: 'Get from secure storage', onTap: () {}),
-                      ],
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    // Sign Out Option
-                    CustomListtile(
-                      icon: Icons.logout_rounded,
-                      title: 'Sign Out',
-                      iconColor: Colors.redAccent,
-                      iconBgColor: const Color(0xFFFFF1F1),
-                      showTrailing: false,
-                      onTap: () => controller.confirmLogout(),
-                    ),
-
-                    const SizedBox(height: 40), // Safe scroll cushion at bottom
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -207,17 +227,20 @@ class CustomerAccountMenu extends GetView<AccountController> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w700,
-            color: Color(0xFF333333),
+        Padding(
+          padding: const EdgeInsets.only(left: 4.0),
+          child: Text(
+            title,
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF333333),
+            ),
           ),
         ),
         const SizedBox(height: 10),
         Container(
-          margin: const EdgeInsets.all(20),
+          margin: const EdgeInsets.only(bottom: 20),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(20),
@@ -231,67 +254,6 @@ class CustomerAccountMenu extends GetView<AccountController> {
             ],
           ),
           child: Column(children: childrenWithDividers),
-        ),
-      ],
-    );
-  }
-}
-
-/// Dynamic text descriptors widget
-class UserProfileInfoStrings extends GetView<AccountController> {
-  const UserProfileInfoStrings({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // Name Block
-        Obx(() => Text(
-          controller.userName.value.isNotEmpty ? controller.userName.value : 'Loading...',
-          textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87),
-        )),
-
-        // Role Badge Block
-        Obx(() {
-          final roleStr = controller.userRole.value.trim();
-          if (roleStr.isEmpty) return const SizedBox.shrink();
-
-          final normalizedRole = roleStr.toLowerCase();
-          final isVendor = normalizedRole == 'vender' || normalizedRole == 'vendor';
-
-          final Color roleColor = isVendor ? const Color(0xFF10B981) : const Color(0xFF0284C7);
-          final Color roleBgColor = isVendor ? const Color(0xFFE6F4EA) : const Color(0xFFE0F2FE);
-
-          return Padding(
-            padding: const EdgeInsets.only(top: 6, bottom: 6),
-            child: Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                decoration: BoxDecoration(
-                  color: roleBgColor,
-                  borderRadius: BorderRadius.circular(100),
-                ),
-                child: Text(
-                  roleStr,
-                  style: TextStyle(color: roleColor, fontWeight: FontWeight.w600, fontSize: 13),
-                ),
-              ),
-            ),
-          );
-        }),
-
-        // Email Row Block
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.mail_outline_rounded, size: 16, color: Colors.grey.shade400),
-            const SizedBox(width: 6),
-            Obx(() => Text(
-              controller.userEmail.value.isNotEmpty ? controller.userEmail.value : '',
-              style: TextStyle(fontSize: 14, color: Colors.grey.shade600, fontWeight: FontWeight.w500),
-            )),
-          ],
         ),
       ],
     );

@@ -9,11 +9,15 @@ import '../../../data/models/response/list_store.dart';
 import '../../../data/models/response/store_favorite.dart';
 import '../../../routes/app_pages.dart';
 import '../../../shared/layouts/main_layout.dart';
+import '../../../shared/services/network_service.dart';
 import '../widgets/add_favorite_bottombar.dart';
 
 
 class HomeController extends GetxController {
   final ApiClient _apiClient = Get.find<ApiClient>();
+
+  // 🟢 Inject NetworkService to watch network state toggles
+  final NetworkService _networkService = Get.find<NetworkService>();
 
   final ScrollController homeScrollController = ScrollController();
   var favoriteStoreIds = <int>[].obs;
@@ -32,7 +36,7 @@ class HomeController extends GetxController {
   var notificationCount = 0.obs;
   var cartCount = 0.obs;
 
-  // 🟢 Automatically reactive: If not authenticated, it's Guest Mode
+  // Automatically reactive: If not authenticated, it's Guest Mode
   bool get isGuestMode => !AuthService.isAuthenticated.value;
 
   bool get isVendor {
@@ -46,29 +50,56 @@ class HomeController extends GetxController {
     ever(AuthService.isAuthenticated, (_) => checkUserStatus());
     checkUserStatus();
     setupHomeScrollListener();
-    fetchSlideShows();
-    fetchCategories();
-    fetchListStore();
-    fetchProduct(page: 1);
+
+    // 1. Initial manual data load when opening home page
+    fetchAllHomeData();
+
+    // 2. 🟢 Listen for when the app regains internet connectivity
+    ever(_networkService.isOnline, (bool online) {
+      if (online) {
+        debugPrint("🚀 Connection restored! Re-fetching home data streams...");
+        fetchAllHomeData();
+      }
+    });
+  }
+
+  /// 🟢 Master fetch wrapper to run everything simultaneously safely
+  Future<void> fetchAllHomeData() async {
+    // Stop execution if the service lists the application as offline
+    if (!_networkService.isOnline.value) return;
+
+    try {
+      isLoading(true); // Single global loader active entry point
+      currentPage = 1;
+      lastPage = 1;
+
+      // Execute all core endpoint calls in parallel to maximize speeds
+      await Future.wait([
+        _fetchSlideShowsInternal(),
+        _fetchCategoriesInternal(),
+        _fetchListStoreInternal(),
+        _fetchProductInternal(page: 1),
+      ]);
+    } catch (e) {
+      debugPrint("❌ Core system initialization failure: $e");
+    } finally {
+      isLoading(false); // Clean termination exit point
+    }
   }
 
   void setupHomeScrollListener() {
     homeScrollController.addListener(() {
-      // 1. Guard against firing if we are already communicating with the backend API
       if (isLoading.value || isMoreLoading.value) return;
 
       final position = homeScrollController.position;
       double maxScroll = position.maxScrollExtent;
       double currentScroll = position.pixels;
 
-
-      // 2. Trigger if within 250 pixels of bottom OR if physics bounced hard right to the max border limit
       bool isNearBottom = (maxScroll - currentScroll) <= 250;
       bool isAtAbsoluteBottom = currentScroll >= maxScroll && !position.outOfRange;
 
       if (isNearBottom || isAtAbsoluteBottom) {
         if (currentPage < lastPage) {
-          // Use a microtask frame lock to ensure page values don't split-trigger requests
           handleProtectedAction(() {
             fetchProduct(page: currentPage + 1);
           });
@@ -77,6 +108,7 @@ class HomeController extends GetxController {
     });
   }
 
+  /// Public entry wrapper method for pagination scrolling
   Future<void> fetchProduct({int page = 1}) async {
     try {
       if (page == 1) {
@@ -84,24 +116,31 @@ class HomeController extends GetxController {
       } else {
         isMoreLoading(true);
       }
+      await _fetchProductInternal(page: page);
+    } finally {
+      isLoading(false);
+      isMoreLoading(false);
+    }
+  }
 
-      // 🟢 Pass the initialized ListProduct configuration straight to ApiClient
+  /// 🟢 Internal worker method decoupled from loading flags
+  Future<void> _fetchProductInternal({int page = 1}) async {
+    try {
       final response = await _apiClient.listproduct(ListProduct(page: page));
 
       if (response.statusCode == 200 && response.data != null) {
         final productResponse = ListProduct.fromJson(response.data);
 
         if (productResponse.productData != null) {
-          // Explicitly fallback increment instead of overriding hard entries
           currentPage = productResponse.productData!.currentPage ?? page;
-          lastPage = productResponse.productData!.lastPage ?? 1; // Safely default map to 1 if null
+          lastPage = productResponse.productData!.lastPage ?? 1;
 
           if (productResponse.productData!.lists != null) {
             if (page == 1) {
               productList.assignAll(productResponse.productData!.lists!);
             } else {
               productList.addAll(productResponse.productData!.lists!);
-              productList.refresh(); // Tells GetX lists to layout new slots
+              productList.refresh();
             }
           }
         }
@@ -110,64 +149,79 @@ class HomeController extends GetxController {
       }
     } catch (e) {
       debugPrint("Error fetching products: $e");
-    } finally {
-      isLoading(false);
-      isMoreLoading(false);
     }
   }
 
+  /// Public access wrapper method
   Future<void> fetchListStore() async {
     try {
       isLoading(true);
+      await _fetchListStoreInternal();
+    } finally {
+      isLoading(false);
+    }
+  }
 
-      // Sending an empty object or query parameters as required by your ApiClient
+  /// 🟢 Internal worker method decoupled from loading flags
+  Future<void> _fetchListStoreInternal() async {
+    try {
       final response = await _apiClient.liststore(ListStore());
 
       if (response.statusCode == 200 && response.data != null) {
-        // 2. Parse the root response body
         final storeResponse = ListStore.fromJson(response.data);
 
-        // 3. 🟢 Target the actual internal array: storeResponse.data.lists
         if (storeResponse.storeData != null && storeResponse.storeData?.lists != null) {
           storeList.assignAll(storeResponse.storeData!.lists!);
         }
       }
     } catch (e) {
+      debugPrint("Error fetching store lists: $e");
+    }
+  }
+
+  /// Public access wrapper method
+  Future<void> fetchCategories() async {
+    try {
+      isLoading(true);
+      await _fetchCategoriesInternal();
     } finally {
       isLoading(false);
     }
   }
 
-  Future<void> fetchCategories() async {
+  /// 🟢 Internal worker method decoupled from loading flags
+  Future<void> _fetchCategoriesInternal() async {
     try {
-      isLoading(true);
       final response = await _apiClient.listcategory(ListCategory());
 
       if (response.statusCode == 200 && response.data != null) {
-        // Map the JSON response to your ListCategory model
         final categoryResponse = ListCategory.fromJson(response.data);
 
         if (categoryResponse.categoryData != null) {
           categories.assignAll(categoryResponse.categoryData!);
         }
-      } else {
-
       }
     } catch (e) {
+      debugPrint("Error fetching categories: $e");
+    }
+  }
 
+  /// Public access wrapper method
+  Future<void> fetchSlideShows() async {
+    try {
+      isLoading(true);
+      await _fetchSlideShowsInternal();
     } finally {
       isLoading(false);
     }
   }
 
-  Future<void> fetchSlideShows() async {
+  /// 🟢 Internal worker method decoupled from loading flags
+  Future<void> _fetchSlideShowsInternal() async {
     try {
-      isLoading(true);
-
       final response = await _apiClient.listslideshow(SlideShow());
 
       if (response.statusCode == 200 && response.data != null) {
-        // Parse the response using your SlideShow model architecture
         final slideShowResponse = SlideShow.fromJson(response.data);
 
         if (slideShowResponse.data != null) {
@@ -178,8 +232,6 @@ class HomeController extends GetxController {
       }
     } catch (e) {
       Get.log("❌ Exception caught while fetching slideshows: $e");
-    } finally {
-      isLoading(false);
     }
   }
 
@@ -192,77 +244,62 @@ class HomeController extends GetxController {
       notificationCount.value = 0;
       cartCount.value = 0;
     } else {
-      // Fetch actual data for signed-in users here
       notificationCount.value = 1;
       cartCount.value = 3;
     }
   }
 
-  // 🟢 This method protects your actions seamlessly
-  void handleProtectedAction(VoidCallback onUserApproved) {
+  Future<void> handleProtectedAction(Function action) async {
     if (isGuestMode) {
-      Get.toNamed(Routes.SIGNIN); // Use .toNamed so they can press 'back' if they want to return to browsing as guest
-    } else {
-      onUserApproved();
+      Get.toNamed(Routes.SIGNIN);
+      return;
     }
+    await action();
   }
 
   void onListStoreVisit() {
-    handleProtectedAction(() {
-
-    });
+    handleProtectedAction(() {});
   }
 
-  void onStoreFavoriteClick(StoreItem store) {
+  void onStoreFavoriteClick(StoreItem store) async {
     final storeId = store.id;
     if (storeId == null) return;
 
-    handleProtectedAction(() async {
+    await handleProtectedAction(() async {
       final bool originalFavState = store.isFav ?? false;
       final int itemIndex = storeList.indexWhere((element) => element.id == storeId);
 
       try {
-        // 1. Instant Optimistic Update
         store.isFav = !originalFavState;
         if (itemIndex != -1) {
           storeList[itemIndex] = store;
         }
 
-        // 2. Network Request
         final response = await _apiClient.favonstore(storeId);
 
-        // 3. Validate Response Payload
         if (response.statusCode == 200 && response.data != null) {
           final favResponse = StoreFavorite.fromJson(response.data);
 
           if (favResponse.status == 'success' || favResponse.statusCode == 200) {
             store.isFav = favResponse.isFav ?? store.isFav;
 
-            // 🟢 4. Show customized Neo-Glass design matching your style requirements
             if (store.isFav == true) {
-              // Image 1: Saved
               showBottomBar(
                 icon: Icons.favorite,
                 isFavoriteActive: true,
-                message: "Add to Favourites",
+                message: "Added to Favourites",
                 actionText: "View Favourites",
-                onActionTap: () {
-                  // Get.toNamed(Routes.FAVOURITES);
-                },
+                onActionTap: () {},
               );
             } else {
-              // Image 2: Removed from Favourites
               showBottomBar(
                 icon: Icons.favorite_border,
                 isFavoriteActive: false,
                 message: "Removed from Favourites",
                 actionText: "Undo",
-                onActionTap: () {
-                  onStoreFavoriteClick(store); // Recursively undo toggle
-                },
+                onActionTap: () => onStoreFavoriteClick(store),
               );
             }
-
           } else {
             store.isFav = originalFavState;
             showErrorBar(favResponse.message ?? "Could not complete update.");
@@ -282,42 +319,36 @@ class HomeController extends GetxController {
     });
   }
 
-  void onProductFavoriteClick(ProductItem product) {
+  void onProductFavoriteClick(ProductItem product) async {
     final productId = product.id;
     if (productId == null) return;
 
-    handleProtectedAction(() async {
+    await handleProtectedAction(() async {
       final bool originalFavState = product.isFavorite == true;
       final int itemIndex = productList.indexWhere((element) => element.id == productId);
 
       try {
-        // 1. Instant Optimistic Update (Happens immediately)
         product.isFavorite = !originalFavState;
         if (itemIndex != -1) {
           productList[itemIndex] = product;
-          productList.refresh(); // Forces GetX grid to instantly paint the new heart color
+          productList.refresh();
         }
 
-        // 2. Network Request
         final response = await _apiClient.favOnProduct(productId);
 
-        // 3. Validate Response Payload
         if (response.statusCode == 200 && response.data != null) {
           final favResponse = StoreFavorite.fromJson(response.data);
 
           if (favResponse.status == 'success' || favResponse.statusCode == 200) {
             product.isFavorite = favResponse.isFav ?? product.isFavorite;
 
-            // 4. Show Custom Neo-Glass Bottom Bars
             if (product.isFavorite == true) {
               showBottomBar(
                 icon: Icons.favorite,
                 isFavoriteActive: true,
                 message: "Added to Favourites",
                 actionText: "View Favourites",
-                onActionTap: () {
-                  // Get.toNamed(Routes.FAVOURITES);
-                },
+                onActionTap: () {},
               );
             } else {
               showBottomBar(
@@ -329,7 +360,6 @@ class HomeController extends GetxController {
               );
             }
           } else {
-            // Revert if backend error
             product.isFavorite = originalFavState;
             showErrorBar(favResponse.message ?? "Could not complete update.");
           }
@@ -338,11 +368,9 @@ class HomeController extends GetxController {
           showErrorBar("Could not complete update.");
         }
       } catch (e) {
-        // Revert if network connection drops
         product.isFavorite = originalFavState;
         showErrorBar("Network connection issue.");
       } finally {
-        // 5. Ensure UI syncs perfectly on completion or fallback revert
         if (itemIndex != -1) {
           productList[itemIndex] = product;
           productList.refresh();
@@ -352,21 +380,16 @@ class HomeController extends GetxController {
   }
 
   void onListStoreClick () {
-    handleProtectedAction(() {
-
-    });
+    handleProtectedAction(() {});
   }
 
   void onCategoryClick() {
-    handleProtectedAction(() {
-
-    });
+    handleProtectedAction(() {});
   }
 
   void onNotificationClick() {
     handleProtectedAction(() {
       Get.snackbar("Success", "Notification Open!");
-      //Get.toNamed(Routes.NOTIFICATIONS);
     });
   }
 
@@ -374,43 +397,32 @@ class HomeController extends GetxController {
     handleProtectedAction(() {
       if (Get.isRegistered<MainLayoutController>()) {
         final mainLayoutController = Get.find<MainLayoutController>();
-
         mainLayoutController.changeTab(1);
-      } else {
-        //Get.toNamed(Routes.CART);
       }
     });
   }
 
   void onAddToFavoriteClick() {
     handleProtectedAction(() {
-      // Your favorite logic here
       Get.snackbar("Success", "Added to favorites!");
     });
   }
-  void seeAllCategoryClick() {
-    handleProtectedAction(() {
 
-    });
+  void seeAllCategoryClick() {
+    handleProtectedAction(() {});
   }
 
   void featuredStoreClick() {
-    handleProtectedAction(() {
-
-    });
+    handleProtectedAction(() {});
   }
 
   void trendingProductClick () {
-    handleProtectedAction(() {
-
-    });
+    handleProtectedAction(() {});
   }
 
   @override
   void onClose() {
-    // TODO: implement onClose
     homeScrollController.dispose();
     super.onClose();
   }
-
 }

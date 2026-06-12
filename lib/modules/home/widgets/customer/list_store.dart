@@ -84,9 +84,10 @@ class ListStoreView extends GetView<HomeController> {
                     right: 8,
                     child: Obx(() {
                       final storeId = store.id;
-                      // 🟢 Listens to reactive list changes
                       final isUpdating = controller.favoriteStoreIds.contains(storeId);
-                      final isFav = store.isFav ?? false;
+
+                      // 🟢 ONLY evaluate as favorite if the user IS NOT a guest
+                      final isFav = !controller.isGuestMode && (store.isFav ?? false);
 
                       return GestureDetector(
                         onTap: isUpdating ? null : () => controller.onStoreFavoriteClick(store),
@@ -114,7 +115,6 @@ class ListStoreView extends GetView<HomeController> {
                       );
                     }),
                   ),
-
                   // Floating Logo Circle/Square
                   Positioned(
                     left: 12,

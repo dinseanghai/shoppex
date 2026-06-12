@@ -147,10 +147,10 @@ class ProductCardItem extends GetView<HomeController> {
                 right: 8,
                 child: Obx(() {
                   final productId = product.id;
-                  final isUpdating = controller.favoriteProductIds.contains(
-                    productId,
-                  );
-                  final isFav = product.isFavorite == true;
+                  final isUpdating = controller.favoriteProductIds.contains(productId);
+
+                  // 🟢 ONLY evaluate as favorite if the user IS NOT a guest
+                  final isFav = !controller.isGuestMode && (product.isFavorite == true);
 
                   return GestureDetector(
                     onTap: isUpdating
@@ -164,20 +164,20 @@ class ProductCardItem extends GetView<HomeController> {
                       ),
                       child: isUpdating
                           ? const SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  Color(0xFF3B59F6),
-                                ),
-                              ),
-                            )
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Color(0xFF3B59F6),
+                          ),
+                        ),
+                      )
                           : Icon(
-                              isFav ? Icons.favorite : Icons.favorite_border,
-                              color: isFav ? Colors.red : Colors.black45,
-                              size: 18,
-                            ),
+                        isFav ? Icons.favorite : Icons.favorite_border,
+                        color: isFav ? Colors.red : Colors.black45,
+                        size: 18,
+                      ),
                     ),
                   );
                 }),

@@ -1,56 +1,78 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:shoppex/modules/home/controllers/home_controller.dart';
-import '../../../../shared/widgets/loading_widget.dart';
 
-class CategoryHorizontalList extends GetView<HomeController> {
+import '../../../../shared/widgets/loading_widget.dart';
+import '../../controllers/customer_home_controller.dart';
+
+
+
+class CategoryHorizontalList extends GetView<CustomerController> {
   const CategoryHorizontalList({super.key});
+
+  static const double _height = 100;
+  static const double _itemWidth = 80;
 
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      // 1. Changed from 125 to 100 to pull the next section up completely!
-      const double elementHeight = 100.0;
-
-      if (controller.isLoading.value) {
+      // ======================================================
+      // LOADING STATE
+      // ======================================================
+      if (controller.isLoading.value &&
+          controller.categories.isEmpty) {
         return const SizedBox(
-          height: elementHeight,
-          child: Center(child: LoadingWidget()),
+          height: _height,
+          child: Center(
+            child: LoadingWidget(),
+          ),
         );
       }
 
+      // ======================================================
+      // EMPTY STATE
+      // ======================================================
       if (controller.categories.isEmpty) {
         return const SizedBox(
-          height: elementHeight,
-          child: Center(child: Text("No categories found")),
+          height: _height,
+          child: Center(
+            child: Text('No categories found'),
+          ),
         );
       }
 
+      // ======================================================
+      // LIST VIEW
+      // ======================================================
       return SizedBox(
-        height: elementHeight,
+        height: _height,
         child: ListView.builder(
           scrollDirection: Axis.horizontal,
           physics: const BouncingScrollPhysics(),
           itemCount: controller.categories.length,
           itemBuilder: (context, index) {
             final category = controller.categories[index];
+
             return GestureDetector(
               onTap: () {
-                controller.onCategoryClick();
-                debugPrint("Selected category: ${category.name}");
+                debugPrint(
+                  'Selected category: ${category.name}',
+                );
+
+                // TODO: Navigate to category page
+                // Get.toNamed(
+                //   Routes.CATEGORY,
+                //   arguments: category,
+                // );
               },
               child: SizedBox(
-                width: 80, // Keeping a crisp card element layout width
+                width: _itemWidth,
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // --- Circular Icon Container ---
                     Container(
                       width: 52,
                       height: 52,
                       decoration: BoxDecoration(
-                        color: Colors.grey[100],
+                        color: Colors.grey.shade100,
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -59,23 +81,22 @@ class CategoryHorizontalList extends GetView<HomeController> {
                         size: 24,
                       ),
                     ),
+
                     const SizedBox(height: 6),
 
-                    // --- Category Label Text ---
-                    // 2. Bound text footprint neatly inside 34px bounds
                     SizedBox(
                       height: 34,
                       child: Text(
                         category.name ?? '',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
                         style: const TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w500,
                           color: Colors.black87,
                           height: 1.2,
                         ),
-                        textAlign: TextAlign.center,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
@@ -88,25 +109,38 @@ class CategoryHorizontalList extends GetView<HomeController> {
     });
   }
 
+  // ======================================================
+  // CATEGORY ICON MAPPING
+  // ======================================================
   IconData _getCategoryIcon(String name) {
-    switch (name.toLowerCase().trim()) {
+    final value = name.toLowerCase().trim();
+
+    switch (value) {
       case 'electronic':
       case 'electronics':
         return Icons.smartphone_rounded;
+
       case 'fashion':
         return Icons.checkroom;
+
       case 'home & living':
         return Icons.chair_outlined;
+
       case 'beauty & personal care':
         return Icons.auto_awesome;
+
       case 'sports & outdoors':
         return Icons.sports_baseball_outlined;
+
       case 'books & stationery':
         return Icons.book_outlined;
+
       case 'toys, kids & baby':
         return Icons.toys_outlined;
+
       case 'automotive':
         return Icons.car_repair;
+
       default:
         return Icons.category_rounded;
     }

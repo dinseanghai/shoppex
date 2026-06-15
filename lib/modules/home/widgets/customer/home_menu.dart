@@ -1,79 +1,102 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shoppex/core/constants/app_colors.dart';
-import 'package:shoppex/modules/home/controllers/home_controller.dart';
+
+
+import 'package:shoppex/modules/home/widgets/customer/list_category.dart';
 import 'package:shoppex/modules/home/widgets/customer/list_product.dart';
 import 'package:shoppex/modules/home/widgets/customer/list_store.dart';
 import 'package:shoppex/modules/home/widgets/customer/slide_show_view.dart';
-import 'list_category.dart';
 
-class CustomerHomeMenu extends GetView<HomeController> {
-  const CustomerHomeMenu({Key? key}) : super(key: key);
+import '../../controllers/customer_home_controller.dart';
+
+class CustomerHomeMenu extends GetView<CustomerController> {
+  const CustomerHomeMenu({super.key});
 
   @override
   Widget build(BuildContext context) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (controller.homeScrollController.hasClients) {
-        // Clear out duplicates and jump-start the listener manually
-        controller.setupHomeScrollListener();
-      }
-    });
     return Scaffold(
       backgroundColor: AppColors.background,
+
+      // ======================================================
+      // APP BAR
+      // ======================================================
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
-        scrolledUnderElevation: 0.0,
+        scrolledUnderElevation: 0,
         automaticallyImplyLeading: false,
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            buildLogo(),
-            Row(children: [buildNotification(), buildCart()]),
+            _buildLogo(),
+            Row(
+              children: [
+                _buildNotification(),
+                _buildCart(),
+              ],
+            ),
           ],
         ),
       ),
 
+      // ======================================================
+      // BODY
+      // ======================================================
       body: SafeArea(
         child: CustomScrollView(
           controller: controller.homeScrollController,
           slivers: [
-            // 🟢 Changed from SliverPadding to SliverToBoxAdapter for the top sections
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 18.0),
+                padding: const EdgeInsets.symmetric(horizontal: 18),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 4),
-                    buildUserAddress(),
+
+                    _buildUserAddress(),
+
                     const SizedBox(height: 10),
-                    buildSearchSection(),
+
+                    _buildSearchSection(),
+
                     const SizedBox(height: 12),
-                    SlideShowView(),
+
+                    const SlideShowView(),
+
                     const SizedBox(height: 6),
-                    buildSectionTitle('Shop by Category', () {
-                      controller.seeAllCategoryClick();
-                    }),
+
+                    _buildSectionTitle(
+                      'Shop by Category',
+                      controller.seeAllCategoryClick,
+                    ),
+
                     const SizedBox(height: 10),
+
                     const CategoryHorizontalList(),
-                    buildSectionTitle('Featured Stores', () {
-                      controller.featuredStoreClick();
-                    }),
-                    ListStoreView(),
-                    buildSectionTitle('Trending Products', () {
-                      controller.trendingProductClick();
-                    }),
+
+                    _buildSectionTitle(
+                      'Featured Stores',
+                      controller.featuredStoreClick,
+                    ),
+
+                    const ListStoreView(),
+
+                    _buildSectionTitle(
+                      'Trending Products',
+                      controller.trendingProductClick,
+                    ),
+
                     const SizedBox(height: 6),
                   ],
                 ),
               ),
             ),
 
-            // 🟢 The product grid lives dynamically down here as its own sliver!
             const SliverPadding(
-              padding: EdgeInsets.symmetric(horizontal: 18.0),
-              sliver: ListProductView(), // ListProductView returns a Sliver/Multi-Sliver
+              padding: EdgeInsets.symmetric(horizontal: 18),
+              sliver: ListProductView(),
             ),
           ],
         ),
@@ -81,7 +104,13 @@ class CustomerHomeMenu extends GetView<HomeController> {
     );
   }
 
-  Widget buildSectionTitle(String title, VoidCallback onViewAllTap) {
+  // ======================================================
+  // SECTION TITLE
+  // ======================================================
+  Widget _buildSectionTitle(
+      String title,
+      VoidCallback onViewAllTap,
+      ) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -94,7 +123,7 @@ class CustomerHomeMenu extends GetView<HomeController> {
           ),
         ),
         TextButton(
-          onPressed: onViewAllTap, // 2. Assign it here
+          onPressed: onViewAllTap,
           child: const Text(
             'See All',
             style: TextStyle(
@@ -108,7 +137,10 @@ class CustomerHomeMenu extends GetView<HomeController> {
     );
   }
 
-  Container buildSearchSection() {
+  // ======================================================
+  // SEARCH
+  // ======================================================
+  Widget _buildSearchSection() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14),
       decoration: BoxDecoration(
@@ -119,35 +151,70 @@ class CustomerHomeMenu extends GetView<HomeController> {
         readOnly: true,
         decoration: InputDecoration(
           hintText: 'Search products, stores...',
-          hintStyle: TextStyle(color: Colors.grey[500], fontSize: 15),
+          hintStyle: TextStyle(
+            color: Colors.grey[500],
+            fontSize: 15,
+          ),
           border: InputBorder.none,
-          icon: Icon(Icons.search, color: Colors.grey[600], size: 22),
-          suffixIcon: Icon(Icons.tune, color: Colors.grey[600], size: 22),
+          icon: Icon(
+            Icons.search,
+            color: Colors.grey[600],
+            size: 22,
+          ),
+          suffixIcon: Icon(
+            Icons.tune,
+            color: Colors.grey[600],
+            size: 22,
+          ),
         ),
       ),
     );
   }
 
-  Row buildUserAddress() {
-    return Row(
-      children: const [
-        Icon(Icons.location_on_outlined, color: Colors.blue, size: 18),
+  // ======================================================
+  // ADDRESS
+  // ======================================================
+  Widget _buildUserAddress() {
+    return const Row(
+      children: [
+        Icon(
+          Icons.location_on_outlined,
+          color: Colors.blue,
+          size: 18,
+        ),
         SizedBox(width: 4),
-        Text('Deliver to ', style: TextStyle(color: Colors.grey, fontSize: 13)),
         Text(
-          "Response from User's address saved",
+          'Deliver to ',
           style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
+            color: Colors.grey,
             fontSize: 13,
           ),
         ),
-        Icon(Icons.keyboard_arrow_down, color: Colors.black54, size: 18),
+        Expanded(
+          child: Text(
+            "Response from User's address saved",
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+              fontSize: 13,
+            ),
+          ),
+        ),
+        Icon(
+          Icons.keyboard_arrow_down,
+          color: Colors.black54,
+          size: 18,
+        ),
       ],
     );
   }
 
-  Row buildLogo() {
+  // ======================================================
+  // LOGO
+  // ======================================================
+  Widget _buildLogo() {
     return Row(
       children: [
         Container(
@@ -165,7 +232,10 @@ class CustomerHomeMenu extends GetView<HomeController> {
         const SizedBox(width: 10),
         RichText(
           text: const TextSpan(
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
             children: [
               TextSpan(
                 text: 'Shopee',
@@ -173,7 +243,9 @@ class CustomerHomeMenu extends GetView<HomeController> {
               ),
               TextSpan(
                 text: 'X',
-                style: TextStyle(color: Color(0xFF3D5AFE)),
+                style: TextStyle(
+                  color: Color(0xFF3D5AFE),
+                ),
               ),
             ],
           ),
@@ -182,9 +254,13 @@ class CustomerHomeMenu extends GetView<HomeController> {
     );
   }
 
-  Obx buildCart() {
+  // ======================================================
+  // CART
+  // ======================================================
+  Widget _buildCart() {
     return Obx(
-      () => IconButton(
+          () => IconButton(
+        onPressed: controller.onCartClick,
         icon: Stack(
           clipBehavior: Clip.none,
           children: [
@@ -212,14 +288,17 @@ class CustomerHomeMenu extends GetView<HomeController> {
               ),
           ],
         ),
-        onPressed: () => controller.onCartClick(),
       ),
     );
   }
 
-  Obx buildNotification() {
+  // ======================================================
+  // NOTIFICATION
+  // ======================================================
+  Widget _buildNotification() {
     return Obx(
-      () => IconButton(
+          () => IconButton(
+        onPressed: controller.onNotificationClick,
         icon: Stack(
           clipBehavior: Clip.none,
           children: [
@@ -232,11 +311,13 @@ class CustomerHomeMenu extends GetView<HomeController> {
               const Positioned(
                 right: 2,
                 top: 2,
-                child: CircleAvatar(radius: 4.5, backgroundColor: Colors.red),
+                child: CircleAvatar(
+                  radius: 4.5,
+                  backgroundColor: Colors.red,
+                ),
               ),
           ],
         ),
-        onPressed: () => controller.onNotificationClick(),
       ),
     );
   }

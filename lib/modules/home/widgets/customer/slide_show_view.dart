@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:shoppex/modules/home/controllers/home_controller.dart';
+import 'package:shoppex/modules/home/controllers/base_home_controller.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 
 import '../../../../shared/widgets/loading_widget.dart';
+import '../../controllers/customer_home_controller.dart';
 
-class SlideShowView extends GetView<HomeController> {
+class SlideShowView extends GetView<CustomerController> {
   const SlideShowView({super.key});
 
   @override

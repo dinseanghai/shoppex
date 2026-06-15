@@ -1,9 +1,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:shoppex/modules/home/controllers/home_controller.dart';
+import 'package:shoppex/modules/home/controllers/base_home_controller.dart';
 
-class VenderHomeMenu extends GetView<HomeController> {
+class VenderHomeMenu extends GetView<BaseHomeController > {
   const VenderHomeMenu({super.key});
 
   @override

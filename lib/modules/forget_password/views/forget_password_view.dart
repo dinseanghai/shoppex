@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shoppex/core/constants/app_assets.dart';
 import 'package:shoppex/core/constants/app_colors.dart';
 import 'package:shoppex/routes/app_pages.dart';
 import 'package:shoppex/shared/widgets/custom_button.dart';
@@ -34,7 +35,7 @@ class ForgetPasswordView extends GetView<ForgetPasswordController> {
                           AppStrings.onboarding_1_title,
                           style: AppTextStyles.displayLarge_primary,
                         ),
-                        AppSizes.gapH24,
+                        AppSizes.gapH16,
                         const Text(
                           'Forgot Your Password?',
                           style: TextStyle(
@@ -42,6 +43,10 @@ class ForgetPasswordView extends GetView<ForgetPasswordController> {
                             fontWeight: FontWeight.bold,
                             color: Colors.black,
                           ),
+                        ),
+                        Image.asset(
+                          AppAssets.forgot_password,
+                          height: 200, // Adjust size as needed
                         ),
                         AppSizes.gapH8,
                         Text(
@@ -53,7 +58,7 @@ class ForgetPasswordView extends GetView<ForgetPasswordController> {
                             height: 1.4,
                           ),
                         ),
-                        AppSizes.gapH48,
+                        AppSizes.gapH24,
                         CustomFormField(
                           controller: controller.emailController,
                           keyboardType: TextInputType.emailAddress,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
 import 'package:get/get_connect/http/src/utils/utils.dart';
+import 'package:shoppex/core/constants/app_assets.dart';
 import 'package:shoppex/core/constants/app_colors.dart';
 import 'package:shoppex/shared/widgets/custom_button.dart';
 import 'package:shoppex/shared/widgets/custom_textformfield.dart';
@@ -33,7 +34,7 @@ class ResetPasswordView extends GetView<ResetPasswordController> {
                       AppStrings.onboarding_1_title,
                       style: AppTextStyles.displayLarge_primary,
                     ),
-                    AppSizes.gapH24,
+                    AppSizes.gapH16,
                     const Text(
                       'Forgot Your Password?',
                       style: TextStyle(
@@ -41,6 +42,10 @@ class ResetPasswordView extends GetView<ResetPasswordController> {
                         fontWeight: FontWeight.bold,
                         color: Colors.black,
                       ),
+                    ),
+                    Image.asset(
+                      AppAssets.reset_password,
+                      height: 180, // Adjust size as needed
                     ),
                     AppSizes.gapH8,
                     Text(
@@ -52,7 +57,7 @@ class ResetPasswordView extends GetView<ResetPasswordController> {
                         height: 1.4,
                       ),
                     ),
-                    AppSizes.gapH48,
+                    AppSizes.gapH24,
                     Obx(
                       () => CustomFormField(
                         label: 'New Password',

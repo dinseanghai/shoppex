@@ -6,7 +6,9 @@ import '../modules/account/views/account_view.dart';
 import '../modules/forget_password/bindings/forget_password_binding.dart';
 import '../modules/forget_password/views/forget_password_view.dart';
 import '../modules/home/bindings/home_binding.dart';
-import '../modules/home/controllers/home_controller.dart';
+import '../modules/home/controllers/base_home_controller.dart';
+import '../modules/home/controllers/customer_home_controller.dart';
+import '../modules/home/controllers/vender_home_controller.dart';
 import '../modules/home/views/home_view.dart';
 import '../modules/onboarding/bindings/onboarding_binding.dart';
 import '../modules/onboarding/views/onboarding_view.dart';
@@ -35,9 +37,10 @@ class AppPages {
       name: _Paths.MAIN_LAYOUT,
       page: () => const MainLayout(),
       binding: BindingsBuilder(() {
-        // 🟢 Using permanent: true tells GetX: "Do not let background route flushes kill this instance!"
-        Get.put(HomeController(), permanent: true);
-        Get.put(AccountController(), permanent: true);
+        Get.lazyPut(() => BaseHomeController());
+        Get.lazyPut(() => CustomerController()); // ✅ ADD THIS
+        Get.lazyPut(() => VendorController());   // optional (future use)
+        Get.lazyPut(() => AccountController());
         Get.lazyPut(() => MainLayoutController());
       }),
     ),

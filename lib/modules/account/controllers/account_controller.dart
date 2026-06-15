@@ -4,7 +4,7 @@ import '../../../shared/layouts/main_layout.dart';
 import '../../../shared/services/auth_service.dart';
 import 'package:get/get.dart';
 import '../../../shared/widgets/loading_widget.dart';
-import '../../home/controllers/home_controller.dart';
+import '../../home/controllers/base_home_controller.dart';
 
 class AccountController extends GetxController {
   // Reactive UI variables
@@ -70,7 +70,7 @@ class AccountController extends GetxController {
   }
 
   void logout() async {
-    // 1. Capture the role before clearing any data state
+    // Capture the role if you need it for logic later
     final bool userWasVendor = isVendor;
 
     Get.showOverlay(
@@ -93,12 +93,10 @@ class AccountController extends GetxController {
         try {
           await Future.delayed(const Duration(milliseconds: 800));
 
-          // 2. Clear local storage authentication tokens globally
-          // 2. Clear local storage authentication tokens globally
-          // 2. Clear local storage authentication tokens globally
+          // 1. Clear local storage/tokens
           await AuthService.to.logout();
 
-          // 3. Reset the MainLayoutController active navigation flags
+          // 2. Reset the MainLayoutController state
           if (Get.isRegistered<MainLayoutController>()) {
             final mainLayout = Get.find<MainLayoutController>();
             mainLayout.isLoggedIn.value = false;
@@ -106,19 +104,17 @@ class AccountController extends GetxController {
             mainLayout.userName.value = 'Guest';
           }
 
-          // 4. DYNAMIC ROUTING FIRST
+          // 3. Let GetX handle dependency disposal automatically
+          // Simply navigate away; GetX will dispose of controllers
+          // linked to the removed routes automatically.
           if (userWasVendor) {
             Get.offAllNamed(Routes.SIGNIN);
-
-            // 🟢 Clean dependency AFTER the view context has begun changing
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              _cleanHomeDependency();
-            });
           } else {
-            // For a regular customer redirecting to home, do NOT hard delete it manually.
-            // Let Get.offAllNamed drop and regenerate it naturally via MainLayout's bindings!
             Get.offAllNamed(Routes.MAIN_LAYOUT);
           }
+
+          // REMOVED: _cleanHomeDependency() call.
+          // It is no longer needed and was the cause of your crash.
 
         } catch (e) {
           Get.snackbar(
@@ -135,9 +131,9 @@ class AccountController extends GetxController {
 // 🧼 Helper method to clear the memory footprint safely
   void _cleanHomeDependency() {
     try {
-      if (Get.isRegistered<HomeController>()) {
+      if (Get.isRegistered<BaseHomeController>()) {
         // 🟢 The force: true flag tells GetX to override the "permanent" lock and delete it anyway
-        Get.delete<HomeController>(force: true);
+        Get.delete<BaseHomeController>(force: true);
       }
     } catch (e) {
 

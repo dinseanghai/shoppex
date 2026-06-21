@@ -6,10 +6,9 @@ import '../controllers/vender_home_controller.dart';
 class HomeBinding extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut(() => BaseHomeController());
-
-    Get.lazyPut(() => CustomerController());
-
-    Get.lazyPut(() => VendorController());
+    // Make these permanent so they survive route changes
+    Get.put(BaseHomeController(), permanent: true);
+    Get.put(CustomerController(), permanent: true);
+    Get.put(VenderController(), permanent: true);
   }
 }

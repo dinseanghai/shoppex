@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shoppex/core/constants/app_colors.dart';
-
-
 import 'package:shoppex/modules/home/widgets/customer/list_category.dart';
 import 'package:shoppex/modules/home/widgets/customer/list_product.dart';
 import 'package:shoppex/modules/home/widgets/customer/list_store.dart';

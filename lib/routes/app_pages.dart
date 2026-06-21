@@ -39,7 +39,7 @@ class AppPages {
       binding: BindingsBuilder(() {
         Get.lazyPut(() => BaseHomeController());
         Get.lazyPut(() => CustomerController()); // ✅ ADD THIS
-        Get.lazyPut(() => VendorController());   // optional (future use)
+        Get.lazyPut(() => VenderController());   // optional (future use)
         Get.lazyPut(() => AccountController());
         Get.lazyPut(() => MainLayoutController());
       }),

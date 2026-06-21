@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 import '../../../data/models/response/list_category.dart';
 import '../../../data/models/response/list_product.dart';
 import '../../../data/models/response/list_slide.dart';
@@ -43,22 +42,16 @@ class CustomerController extends BaseHomeController {
   void onInit() {
     super.onInit();
 
-    fetchHomeData();
-
-    networkService.isOnline.listen((online) {
-      if (online) {
-        resetPagination();
-        fetchHomeData();
-      }
-    });
-
-    ever(AuthService.isAuthenticated, (_) {
-      resetPagination();
+    // 1. Only fetch if we have no data
+    if (productList.isEmpty) {
       fetchHomeData();
+    }
 
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _checkAutoLoad();
-      });
+    ever(AuthService.isAuthenticated, (bool isAuthenticated) {
+      // 2. DO NOT call resetPagination() here.
+      // Instead, just perform a silent refresh or fetch only if needed.
+      // If you MUST refresh, don't clear the list first.
+      fetchHomeData();
     });
   }
 

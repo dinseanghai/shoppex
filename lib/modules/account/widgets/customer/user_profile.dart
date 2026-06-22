@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../controllers/account_controller.dart';
+import '../../controllers/base_account_controller.dart';
 
-class UserProfileHeader extends GetView<AccountController> {
+class UserProfileHeader extends GetView<BaseAccountController> {
   const UserProfileHeader({super.key});
 
   @override
@@ -23,8 +23,8 @@ class UserProfileHeader extends GetView<AccountController> {
           final roleStr = controller.userRole.value.trim();
           if (roleStr.isEmpty) return const SizedBox.shrink();
 
-          final normalizedRole = roleStr.toLowerCase();
-          final isVendor = normalizedRole == 'vender' || normalizedRole == 'vendor';
+          // 🟢 Uses the shared getter from BaseAccountController
+          final isVendor = controller.isVendor;
 
           final Color roleColor = isVendor ? const Color(0xFF10B981) : const Color(0xFF0284C7);
           final Color roleBgColor = isVendor ? const Color(0xFFE6F4EA) : const Color(0xFFE0F2FE);

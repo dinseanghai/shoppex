@@ -10,7 +10,7 @@ class VenderHeader extends GetView<VenderController> {
   @override
   Widget build(BuildContext context) {
     return Obx(() => Container(
-      height: 300,
+      height: 290,
       margin: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(36),
@@ -46,7 +46,7 @@ class VenderHeader extends GetView<VenderController> {
                   Row(
                     children: [
                       _buildAvatar(),
-                      const SizedBox(width: 16),
+                      const SizedBox(width: 8),
                       _buildProfileDetails(),
                       _buildNotificationButton(),
                     ],
@@ -84,7 +84,7 @@ class VenderHeader extends GetView<VenderController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('${controller.greeting} 👋',
+          Text('${controller.greeting}',
               style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 16)),
 
           Text(controller.userName.value,
@@ -122,12 +122,12 @@ class VenderHeader extends GetView<VenderController> {
       width: 50,
       height: 50,
       decoration: BoxDecoration(
-          shape: BoxShape.circle, color: Colors.white.withOpacity(0.3)),
+          shape: BoxShape.circle, color: Colors.white.withOpacity(0.2)),
       child: Stack(
         alignment: Alignment.center,
         children: [
           const Icon(Icons.notifications_none_rounded,
-              color: Colors.white, size: 30),
+              color: Colors.white, size: 28),
           Positioned(
             top: 14,
             right: 14,
@@ -146,9 +146,9 @@ class VenderHeader extends GetView<VenderController> {
     return ClipRRect(
       borderRadius: BorderRadius.circular(24),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+        filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
         child: Container(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           decoration: BoxDecoration(
             color: Colors.black.withOpacity(0.1),
             borderRadius: BorderRadius.circular(30),

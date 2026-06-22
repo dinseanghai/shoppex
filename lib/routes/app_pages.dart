@@ -1,7 +1,8 @@
 import 'package:get/get.dart';
+import 'package:shoppex/modules/account/controllers/base_account_controller.dart';
 
 import '../modules/account/bindings/account_binding.dart';
-import '../modules/account/controllers/account_controller.dart';
+import '../modules/account/controllers/customer_account_controller.dart';
 import '../modules/account/views/account_view.dart';
 import '../modules/forget_password/bindings/forget_password_binding.dart';
 import '../modules/forget_password/views/forget_password_view.dart';
@@ -40,7 +41,7 @@ class AppPages {
         Get.lazyPut(() => BaseHomeController());
         Get.lazyPut(() => CustomerController()); // ✅ ADD THIS
         Get.lazyPut(() => VenderController());   // optional (future use)
-        Get.lazyPut(() => AccountController());
+        Get.lazyPut(() => BaseAccountController());
         Get.lazyPut(() => MainLayoutController());
       }),
     ),

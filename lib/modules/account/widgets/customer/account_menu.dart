@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:shoppex/core/constants/app_size.dart';
 import 'package:shoppex/modules/account/widgets/customer/user_profile.dart';
 import 'package:shoppex/modules/account/widgets/switch_account_type.dart';
 import 'package:shoppex/shared/widgets/custom_listtile.dart';
-import '../../controllers/account_controller.dart';
+import '../../controllers/customer_account_controller.dart';
 
-class CustomerAccountMenu extends GetView<AccountController> {
+class CustomerAccountMenu extends GetView<CustomerAccountController> {
   const CustomerAccountMenu({super.key});
 
   @override

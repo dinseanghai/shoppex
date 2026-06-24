@@ -75,5 +75,25 @@ class ProductDetailController extends GetxController {
 
   void incrementQuantity() => quantity.value++;
   void decrementQuantity() { if (quantity.value > 1) quantity.value--; }
+
+  double get totalPrice {
+    final product = rxProduct.value;
+    if (product == null) return 0.0;
+
+    // Helper to safely parse String? to double
+    double parsePrice(String? priceStr) {
+      if (priceStr == null || priceStr.isEmpty) return 0.0;
+      return double.tryParse(priceStr) ?? 0.0;
+    }
+
+    final double sPrice = parsePrice(product.salePrice);
+    final double bPrice = parsePrice(product.basePrice);
+
+    // Use salePrice if it's valid, otherwise fallback to basePrice
+    final priceToUse = (sPrice > 0) ? sPrice : bPrice;
+
+    return priceToUse * quantity.value.toDouble();
+  }
+
 }
 

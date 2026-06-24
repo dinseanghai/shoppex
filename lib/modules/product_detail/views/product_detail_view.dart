@@ -184,8 +184,8 @@ class ProductDetailView extends GetView<ProductDetailController> {
                                     CircleAvatar(radius: 8, backgroundColor: const Color(0xFF3B59F6), child: const Text("TH", style: TextStyle(fontSize: 7, color: Colors.white))),
                                     const SizedBox(width: 4),
                                     const Text("TechHub Pro", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.black)),
-                                    const SizedBox(width: 2),
-                                    const Icon(Icons.check_circle, size: 12, color: Color(0xFF3B59F6)),
+                                    const SizedBox(width: 4),
+                                    const Icon(Icons.verified_outlined, size: 14, color: Color(0xFF3B59F6)),
                                   ],
                                 ),
                               )
@@ -356,7 +356,7 @@ class ProductDetailView extends GetView<ProductDetailController> {
                       ],
                     ),
                     child: CircleAvatar(
-                      backgroundColor: Colors.white.withOpacity(0.9),
+                      backgroundColor: Colors.white.withOpacity(0.8),
                       radius: 20,
                       child: IconButton(
                         padding: EdgeInsets.zero,
@@ -381,7 +381,7 @@ class ProductDetailView extends GetView<ProductDetailController> {
                           ],
                         ),
                         child: CircleAvatar(
-                          backgroundColor: Colors.white.withOpacity(0.9),
+                          backgroundColor: Colors.white.withOpacity(0.8),
                           radius: 20,
                           child: IconButton(
                             padding: EdgeInsets.zero,
@@ -403,7 +403,7 @@ class ProductDetailView extends GetView<ProductDetailController> {
                           ],
                         ),
                         child: CircleAvatar(
-                          backgroundColor: Colors.white.withOpacity(0.9),
+                          backgroundColor: Colors.white.withOpacity(0.8),
                           radius: 20,
                           child: IconButton(
                             padding: EdgeInsets.zero,
@@ -650,22 +650,29 @@ class ProductDetailView extends GetView<ProductDetailController> {
   }
 
   Widget _buildBottomCartBar() {
+    final controller = Get.find<ProductDetailController>();
+
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 14, 20, 28),
       decoration: BoxDecoration(
         color: Colors.white,
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, -4))],
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, -4))
+        ],
       ),
-      child: ElevatedButton(
+      // 🟢 Obx makes this specific widget reactive
+      child: Obx(() => ElevatedButton(
         onPressed: () {},
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF3B59F6),
           minimumSize: const Size.fromHeight(48),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-          elevation: 0,
         ),
-        child: const Text("Add to Cart", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
-      ),
+        child: Text(
+          "(\$${controller.totalPrice.toStringAsFixed(2)}) Add to Cart ",
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+        ),
+      )),
     );
   }
 }

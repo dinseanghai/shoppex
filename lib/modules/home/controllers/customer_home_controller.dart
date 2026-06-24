@@ -348,6 +348,12 @@ class CustomerController extends BaseHomeController {
     });
   }
 
+  void onStoreClick() {
+    requireLogin(() async {
+
+    });
+  }
+
   void seeAllCategoryClick() {}
   void featuredStoreClick() {}
   void trendingProductClick() {}

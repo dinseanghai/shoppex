@@ -88,6 +88,7 @@ class _StoreCard extends GetView<CustomerController> {
         child: InkWell(
           onTap: () {
             debugPrint('Selected store: ${store.name}');
+            controller.onStoreClick();
           },
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

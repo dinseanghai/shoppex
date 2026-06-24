@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
-import 'package:shoppex/modules/account/controllers/base_account_controller.dart';
 
 import '../modules/account/bindings/account_binding.dart';
+import '../modules/account/controllers/base_account_controller.dart';
 import '../modules/account/controllers/customer_account_controller.dart';
 import '../modules/account/views/account_view.dart';
 import '../modules/forget_password/bindings/forget_password_binding.dart';
@@ -17,6 +17,8 @@ import '../modules/otp/bindings/otp_binding.dart';
 import '../modules/otp/views/otp_view.dart';
 import '../modules/otp_resetpassword/bindings/otp_resetpassword_binding.dart';
 import '../modules/otp_resetpassword/views/otp_resetpassword_view.dart';
+import '../modules/product_detail/bindings/product_detail_binding.dart';
+import '../modules/product_detail/views/product_detail_view.dart';
 import '../modules/reset_password/bindings/reset_password_binding.dart';
 import '../modules/reset_password/views/reset_password_view.dart';
 import '../modules/sign_in/bindings/sign_in_binding.dart';
@@ -40,7 +42,7 @@ class AppPages {
       binding: BindingsBuilder(() {
         Get.lazyPut(() => BaseHomeController());
         Get.lazyPut(() => CustomerController()); // ✅ ADD THIS
-        Get.lazyPut(() => VenderController());   // optional (future use)
+        Get.lazyPut(() => VenderController()); // optional (future use)
         Get.lazyPut(() => BaseAccountController());
         Get.lazyPut(() => MainLayoutController());
       }),
@@ -91,6 +93,11 @@ class AppPages {
       name: _Paths.ACCOUNT,
       page: () => const AccountView(),
       binding: AccountBinding(),
+    ),
+    GetPage(
+      name: _Paths.PRODUCT_DETAIL,
+      page: () => const ProductDetailView(),
+      binding: ProductDetailBinding(),
     ),
   ];
 }

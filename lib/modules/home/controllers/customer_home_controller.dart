@@ -6,6 +6,7 @@ import '../../../data/models/response/list_slide.dart';
 import '../../../data/models/response/list_store.dart';
 import '../../../data/models/response/product_favorite.dart';
 import '../../../data/models/response/store_favorite.dart';
+import '../../../routes/app_pages.dart';
 import '../../../shared/layouts/main_layout.dart';
 import '../../../shared/services/auth_service.dart';
 import '../widgets/add_favorite_bottombar.dart';
@@ -335,6 +336,15 @@ class CustomerController extends BaseHomeController {
       if (Get.isRegistered<MainLayoutController>()) {
         Get.find<MainLayoutController>().changeTab(1);
       }
+    });
+  }
+
+  void onProductClick(ProductItem product) {
+    requireLogin(() async {
+      Get.toNamed(
+        '${Routes.PRODUCT_DETAIL}/${product.id}',
+        arguments: product,
+      );
     });
   }
 

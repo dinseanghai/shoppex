@@ -88,193 +88,198 @@ class ProductCardItem extends GetView<CustomerController> {
 
     final imageUrl = product.thumbnail ?? product.image;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Colors.grey.shade100,
-          width: 1.5,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(18),
-                ),
-                child: Container(
-                  height: 140,
-                  width: double.infinity,
-                  color: const Color(0xFFF6F6F6),
-                  child: imageUrl != null
-                      ? Image.network(
-                    imageUrl,
-                    fit: BoxFit.cover,
-                    loadingBuilder: (
-                        context,
-                        child,
-                        loadingProgress,
-                        ) {
-                      if (loadingProgress == null) {
-                        return child;
-                      }
-
-                      return const Center(
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                        ),
-                      );
-                    },
-                    errorBuilder: (_, __, ___) {
-                      return const Icon(
-                        Icons.broken_image,
-                        size: 40,
-                        color: Colors.grey,
-                      );
-                    },
-                  )
-                      : const Icon(
-                    Icons.image,
-                    size: 40,
-                    color: Colors.grey,
-                  ),
-                ),
-              ),
-
-              if ((product.discountPercent ?? 0) > 0)
-                Positioned(
-                  top: 12,
-                  left: 12,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFF6D00),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      '-${product.discountPercent}%',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                ),
-
-              Positioned(
-                top: 8,
-                right: 8,
-                child: GestureDetector(
-                  onTap: () =>
-                      controller.onProductFavoriteClick(product),
-                  child: Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.9),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      isFav
-                          ? Icons.favorite
-                          : Icons.favorite_border,
-                      color: isFav ? Colors.red : Colors.black45,
-                      size: 18,
-                    ),
-                  ),
-                ),
-              ),
-            ],
+    return InkWell(
+      onTap: () {
+        controller.onProductClick(product);
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: Colors.grey.shade100,
+            width: 1.5,
           ),
-
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Stack(
               children: [
-                Text(
-                  product.name ?? '',
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
-                    height: 1.3,
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(18),
+                  ),
+                  child: Container(
+                    height: 140,
+                    width: double.infinity,
+                    color: const Color(0xFFF6F6F6),
+                    child: imageUrl != null
+                        ? Image.network(
+                      imageUrl,
+                      fit: BoxFit.cover,
+                      loadingBuilder: (
+                          context,
+                          child,
+                          loadingProgress,
+                          ) {
+                        if (loadingProgress == null) {
+                          return child;
+                        }
+
+                        return const Center(
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                          ),
+                        );
+                      },
+                      errorBuilder: (_, __, ___) {
+                        return const Icon(
+                          Icons.broken_image,
+                          size: 40,
+                          color: Colors.grey,
+                        );
+                      },
+                    )
+                        : const Icon(
+                      Icons.image,
+                      size: 40,
+                      color: Colors.grey,
+                    ),
                   ),
                 ),
 
-                const SizedBox(height: 6),
-
-                Row(
-                  children: [
-                    Text(
-                      '\$${product.salePrice ?? product.basePrice ?? '0'}',
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
+                if ((product.discountPercent ?? 0) > 0)
+                  Positioned(
+                    top: 12,
+                    left: 12,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
                       ),
-                    ),
-
-                    const SizedBox(width: 6),
-
-                    if ((product.discountPercent ?? 0) > 0 &&
-                        product.basePrice != null)
-                      Text(
-                        '\$${product.basePrice}',
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFF6D00),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        '-${product.discountPercent}%',
                         style: const TextStyle(
-                          fontSize: 11,
-                          color: Colors.grey,
-                          decoration:
-                          TextDecoration.lineThrough,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
                         ),
                       ),
-                  ],
-                ),
-
-                const SizedBox(height: 6),
-
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.star,
-                      color: Colors.orange,
-                      size: 14,
                     ),
+                  ),
 
-                    const SizedBox(width: 4),
-
-                    Text(
-                      product.ratingAvg ?? '0.0',
-                      style: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: GestureDetector(
+                    onTap: () =>
+                        controller.onProductFavoriteClick(product),
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.9),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        isFav
+                            ? Icons.favorite
+                            : Icons.favorite_border,
+                        color: isFav ? Colors.red : Colors.black45,
+                        size: 18,
                       ),
                     ),
-
-                    const SizedBox(width: 2),
-
-                    Text(
-                      '(${product.ratingCount ?? 0})',
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ],
             ),
-          ),
-        ],
+
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    product.name ?? '',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                      height: 1.3,
+                    ),
+                  ),
+
+                  const SizedBox(height: 6),
+
+                  Row(
+                    children: [
+                      Text(
+                        '\$${product.salePrice ?? product.basePrice ?? '0'}',
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+
+                      const SizedBox(width: 6),
+
+                      if ((product.discountPercent ?? 0) > 0 &&
+                          product.basePrice != null)
+                        Text(
+                          '\$${product.basePrice}',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey,
+                            decoration:
+                            TextDecoration.lineThrough,
+                          ),
+                        ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 6),
+
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.star,
+                        color: Colors.orange,
+                        size: 14,
+                      ),
+
+                      const SizedBox(width: 4),
+
+                      Text(
+                        product.ratingAvg ?? '0.0',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+
+                      const SizedBox(width: 2),
+
+                      Text(
+                        '(${product.ratingCount ?? 0})',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -158,11 +158,31 @@ class ProductDetailView extends GetView<ProductDetailController> {
                                 style: const TextStyle(fontSize: 14, color: Colors.grey, decoration: TextDecoration.lineThrough),
                               ),
                               const SizedBox(width: 10),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(color: const Color(0xFFFFF3E0), borderRadius: BorderRadius.circular(4)),
-                                child: const Text("Save \$120", style: TextStyle(color: Color(0xFFFF6D00), fontWeight: FontWeight.bold, fontSize: 11)),
-                              )
+                              Obx(() {
+                                final savingsText = controller.discountSaving;
+
+                                // If salePrice is null or there are no savings, don't render anything
+                                if (savingsText == null) {
+                                  return const SizedBox.shrink();
+                                }
+
+                                // Display the badge if a discount exists
+                                return Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFFF3E0),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    savingsText,
+                                    style: const TextStyle(
+                                      color: Color(0xFFFF6D00),
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                );
+                              })
                             ],
                           ),
                           const SizedBox(height: 12),
@@ -292,7 +312,7 @@ class ProductDetailView extends GetView<ProductDetailController> {
                           const Divider(height: 40, color: Color(0xFFF5F5F5)),
 
                           // Statistical Graphic Bar Diagrams
-                          _buildReviewAnalysisDistribution(product),
+                          _buildReviewAnalysisDistribution(controller),
                           const SizedBox(height: 20),
 
                           // Individual Customer Reviews Mock Widgets
@@ -475,63 +495,115 @@ class ProductDetailView extends GetView<ProductDetailController> {
     );
   }
 
-  Widget _buildReviewAnalysisDistribution(dynamic product) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text("Ratings & Reviews", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-        const SizedBox(height: 16),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text("4.8", style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold, color: Colors.black)),
-                Row(children: List.generate(5, (i) => const Icon(Icons.star, color: Colors.orange, size: 14))),
-                const SizedBox(height: 4),
-                const Text('1,248 ratings', style: TextStyle(fontSize: 11, color: Colors.grey)),
-              ],
-            ),
-            const SizedBox(width: 32),
-            Expanded(
-              child: Column(
+  Widget _buildReviewAnalysisDistribution(ProductDetailController controller) {
+    return Obx(() {
+      final avgRating = controller.averageRating;
+      final totalCount = controller.totalRatingCount;
+
+      // Get calculated distributions from controller
+      final star5 = controller.getStarDistribution('5');
+      final star4 = controller.getStarDistribution('4');
+      final star3 = controller.getStarDistribution('3');
+      final star2 = controller.getStarDistribution('2');
+      final star1 = controller.getStarDistribution('1');
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text("Ratings & Reviews", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+          const SizedBox(height: 16),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Left Column: Total & Average Summary
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildStatRow("5", 0.82, "82%"),
-                  _buildStatRow("4", 0.12, "12%"),
-                  _buildStatRow("3", 0.04, "4%"),
-                  _buildStatRow("2", 0.01, "1%"),
-                  _buildStatRow("1", 0.01, "1%"),
+                  Text(
+                    avgRating.toStringAsFixed(1),
+                    style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold, color: Colors.black),
+                  ),
+                  Row(
+                    children: List.generate(5, (index) {
+                      return Icon(
+                        Icons.star,
+                        color: index < avgRating.floor() ? Colors.orange : Colors.grey[300],
+                        size: 14,
+                      );
+                    }),
+                  ),
+                  const SizedBox(height: 4),
+                  Text('$totalCount ratings', style: const TextStyle(fontSize: 11, color: Colors.grey)),
                 ],
               ),
-            )
-          ],
-        )
-      ],
-    );
+              const SizedBox(width: 32),
+
+              // Right Column: Progress Bars
+              Expanded(
+                child: Column(
+                  children: [
+                    _buildStatRow("5", star5['ratio'], star5['percentText']),
+                    _buildStatRow("4", star4['ratio'], star4['percentText']),
+                    _buildStatRow("3", star3['ratio'], star3['percentText']),
+                    _buildStatRow("2", star2['ratio'], star2['percentText']),
+                    _buildStatRow("1", star1['ratio'], star1['percentText']),
+                  ],
+                ),
+              )
+            ],
+          )
+        ],
+      );
+    });
   }
 
   Widget _buildStatRow(String starNumber, double ratio, String percentText) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
+      padding: const EdgeInsets.symmetric(vertical: 3), // Slightly more vertical padding for breathing room
       key: ValueKey(starNumber),
       child: Row(
         children: [
-          Text(starNumber, style: const TextStyle(fontSize: 11, color: Colors.grey)),
-          const SizedBox(width: 8),
-          Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(2),
-              child: LinearProgressIndicator(
-                value: ratio,
-                backgroundColor: const Color(0xFFF5F5F5),
-                valueColor: const AlwaysStoppedAnimation<Color>(Colors.orange),
-                minHeight: 5,
+          // 1. Star Number Label
+          SizedBox(
+            width: 12,
+            child: Text(
+              starNumber,
+              style: const TextStyle(
+                fontSize: 12,
+                color: Colors.grey,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ),
-          const SizedBox(width: 8),
-          SizedBox(width: 28, child: Text(percentText, textAlign: TextAlign.end, style: const TextStyle(fontSize: 11, color: Colors.grey))),
+          const SizedBox(width: 12),
+
+          // 2. The Progress Bar Track
+          Expanded(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(4), // Smoother rounded corners
+              child: LinearProgressIndicator(
+                value: ratio,
+                backgroundColor: const Color(0xFFF5F5F5), // Light grey track background
+                valueColor: const AlwaysStoppedAnimation<Color>(Colors.orange), // Orange fill
+                minHeight: 6, // Slightly thicker for easier visibility
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+
+          // 3. Percentage Text Label
+          SizedBox(
+            width: 32, // Prevent layout breaking if value hits 100%
+            child: Text(
+              percentText,
+              textAlign: TextAlign.end,
+              style: const TextStyle(
+                fontSize: 12,
+                color: Colors.grey,
+                fontWeight: FontWeight.normal,
+              ),
+            ),
+          ),
         ],
       ),
     );

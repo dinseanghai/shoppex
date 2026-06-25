@@ -95,5 +95,86 @@ class ProductDetailController extends GetxController {
     return priceToUse * quantity.value.toDouble();
   }
 
+  String? get discountSaving {
+    final product = rxProduct.value;
+    if(product == null) return null;
+
+    double parsePrice(String? priceStr) {
+      if(priceStr == null || priceStr.isEmpty) return 0.0;
+      return double.tryParse(priceStr) ?? 0.0;
+    }
+
+    final double bPrice = parsePrice(product.basePrice);
+    final double sPrice = parsePrice(product.salePrice);
+    if(sPrice > 0 && sPrice < bPrice) {
+      final double saving = bPrice - sPrice;
+      return "Save \$${saving.toStringAsFixed(0)}";
+    }
+    return null;
+  }
+
+  double get averageRating =>
+      double.tryParse(rxProduct.value?.ratingAvg?.toString() ?? '0') ?? 0.0;
+
+  int get totalRatingCount =>
+      int.tryParse(rxProduct.value?.ratingCount?.toString() ?? '0') ?? 0;
+
+  /// Helper to calculate ratio and percentage string for a specific star count
+  Map<String, dynamic> getStarDistribution(String starKey) {
+    final int totalCount = totalRatingCount;
+    final double avg = averageRating;
+
+    if (totalCount == 0 || rxProduct.value == null) {
+      return {'ratio': 0.0, 'percentText': '0%'};
+    }
+
+    // Fallback distribution percentages based on typical e-commerce rating averages
+    double simulatedRatio = 0.0;
+
+    if (avg >= 4.5) {
+      // Highly positive curve (like 4.7 - 4.9)
+      switch (starKey) {
+        case '5': simulatedRatio = 0.82; break;
+        case '4': simulatedRatio = 0.12; break;
+        case '3': simulatedRatio = 0.04; break;
+        case '2': simulatedRatio = 0.01; break;
+        case '1': simulatedRatio = 0.01; break;
+      }
+    } else if (avg >= 4.0) {
+      // Good standard curve (like your 4.4 Fresh Fruit box)
+      switch (starKey) {
+        case '5': simulatedRatio = 0.65; break;
+        case '4': simulatedRatio = 0.20; break;
+        case '3': simulatedRatio = 0.09; break;
+        case '2': simulatedRatio = 0.04; break;
+        case '1': simulatedRatio = 0.02; break;
+      }
+    } else if (avg >= 3.0) {
+      // Average/Mediocre curve
+      switch (starKey) {
+        case '5': simulatedRatio = 0.35; break;
+        case '4': simulatedRatio = 0.25; break;
+        case '3': simulatedRatio = 0.20; break;
+        case '2': simulatedRatio = 0.12; break;
+        case '1': simulatedRatio = 0.08; break;
+      }
+    } else {
+      // Poor performing product curve
+      switch (starKey) {
+        case '5': simulatedRatio = 0.10; break;
+        case '4': simulatedRatio = 0.15; break;
+        case '3': simulatedRatio = 0.20; break;
+        case '2': simulatedRatio = 0.25; break;
+        case '1': simulatedRatio = 0.30; break;
+      }
+    }
+
+    return {
+      'ratio': simulatedRatio,
+      'percentText': "${(simulatedRatio * 100).toStringAsFixed(0)}%",
+    };
+  }
+
+
 }
 

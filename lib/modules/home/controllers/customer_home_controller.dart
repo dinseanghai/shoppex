@@ -348,9 +348,17 @@ class CustomerController extends BaseHomeController {
     });
   }
 
-  void onStoreClick() {
+  void onStoreClick(StoreItem store) {
     requireLogin(() async {
+      Get.toNamed('${Routes.STORE_DETAIL}/${store.id}',
+      arguments: store);
+    });
+  }
 
+  void onStoreVisit(StoreItem store) {
+    requireLogin(() async {
+      Get.toNamed('${Routes.STORE_DETAIL}/${store.id}',
+      arguments: store);
     });
   }
 

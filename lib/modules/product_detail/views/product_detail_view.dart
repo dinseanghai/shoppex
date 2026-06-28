@@ -115,21 +115,21 @@ class ProductDetailView extends GetView<ProductDetailController> {
                             ),
                           ),
                         // Slider Carousel Dot overlay Indicators
-                        Positioned(
-                          bottom: 16,
-                          left: 0,
-                          right: 0,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(width: 16, height: 5, decoration: BoxDecoration(color: const Color(0xFF3B59F6), borderRadius: BorderRadius.circular(4))),
-                              const SizedBox(width: 4),
-                              Container(width: 5, height: 5, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
-                              const SizedBox(width: 4),
-                              Container(width: 5, height: 5, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
-                            ],
-                          ),
-                        )
+                        // Positioned(
+                        //   bottom: 16,
+                        //   left: 0,
+                        //   right: 0,
+                        //   child: Row(
+                        //     mainAxisAlignment: MainAxisAlignment.center,
+                        //     children: [
+                        //       Container(width: 16, height: 5, decoration: BoxDecoration(color: const Color(0xFF3B59F6), borderRadius: BorderRadius.circular(4))),
+                        //       const SizedBox(width: 4),
+                        //       Container(width: 5, height: 5, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+                        //       const SizedBox(width: 4),
+                        //       Container(width: 5, height: 5, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+                        //     ],
+                        //   ),
+                        // )
                       ],
                     ),
 

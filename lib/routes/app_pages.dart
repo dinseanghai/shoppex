@@ -25,6 +25,8 @@ import '../modules/sign_in/bindings/sign_in_binding.dart';
 import '../modules/sign_in/views/sign_in_view.dart';
 import '../modules/sign_up/bindings/sign_up_binding.dart';
 import '../modules/sign_up/views/sign_up_view.dart';
+import '../modules/store_detail/bindings/store_detail_binding.dart';
+import '../modules/store_detail/views/store_detail_view.dart';
 import '../shared/layouts/main_layout.dart';
 import 'route_middlewares.dart';
 
@@ -98,6 +100,11 @@ class AppPages {
       name: _Paths.PRODUCT_DETAIL,
       page: () => const ProductDetailView(),
       binding: ProductDetailBinding(),
+    ),
+    GetPage(
+      name: _Paths.STORE_DETAIL,
+      page: () => const StoreDetailView(),
+      binding: StoreDetailBinding(),
     ),
   ];
 }

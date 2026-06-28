@@ -87,8 +87,8 @@ class _StoreCard extends GetView<CustomerController> {
         borderRadius: BorderRadius.circular(16),
         child: InkWell(
           onTap: () {
-            debugPrint('Selected store: ${store.name}');
-            controller.onStoreClick();
+            //debugPrint('Selected store: ${store.name}');
+            controller.onStoreClick(store);
           },
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -212,9 +212,7 @@ class _StoreCard extends GetView<CustomerController> {
                       height: 32,
                       child: ElevatedButton(
                         onPressed: () {
-                          debugPrint(
-                            'Visit store: ${store.name}',
-                          );
+                          controller.onStoreVisit(store);
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor:

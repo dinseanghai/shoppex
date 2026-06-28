@@ -58,35 +58,125 @@ class CustomerAccountMenu extends GetView<CustomerAccountController> {
                             onTap: () {},
                           ),
                           const SizedBox(height: 24),
+                          _buildSectionHeader('Account Setting'),
+                          const SizedBox(height: 8),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: Colors.grey.shade200, width: 1.5),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.02),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              children: [
+                                CustomListtile(
+                                  icon: Icons.person_2_outlined,
+                                  title: 'Personal Information',
+                                  subtitle: 'Update your details',
+                                  onTap: () {},
+                                ),
+                                const Divider(height: 1, indent: 16, endIndent: 16),
+                                CustomListtile(
+                                  icon: Icons.shield_outlined,
+                                  title: 'Privacy & Security',
+                                  subtitle: 'Password, 2FA',
+                                  onTap: () {},
+                                ),
 
-                          // Organized Settings Blocks
-                          _buildMenuSection(
-                            title: 'Account Settings',
-                            items: [
-                              CustomListtile(icon: Icons.person_2_outlined, title: 'Personal Information', subtitle: 'Update your details', onTap: () {}),
-                              CustomListtile(icon: Icons.shield_outlined, title: 'Privacy & Security', subtitle: 'Password, 2FA', onTap: () {}),
-                            ],
+                              ],
+                            ),
                           ),
-                          _buildMenuSection(
-                            title: 'Preferences',
-                            items: [
-                              CustomListtile(icon: Icons.notifications_none_outlined, title: 'Notifications', subtitle: 'Manage your alerts', onTap: () {}),
-                              CustomListtile(icon: Icons.language_outlined, title: 'Language', subtitle: 'Get from secure storage', onTap: () {}),
-                              CustomListtile(icon: Icons.dark_mode_outlined, title: 'Appearance', subtitle: 'Get from secure storage', onTap: () {}),
-                            ],
+                          const SizedBox(height: 24),
+                          _buildSectionHeader('Preferences'),
+                          const SizedBox(height: 8),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: Colors.grey.shade200, width: 1.5),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.02),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              children: [
+                                CustomListtile(
+                                  icon: Icons.favorite_border_outlined,
+                                  title: 'Favorite',
+                                  subtitle: 'Your favorite',
+                                  onTap: () {},
+                                ),
+                                const Divider(height: 1, indent: 16, endIndent: 16),
+                                CustomListtile(
+                                  icon: Icons.notifications_none_outlined,
+                                  title: 'Push Notifications',
+                                  subtitle: 'Orders, payout, alert',
+                                  onTap: () {},
+                                ),
+                                const Divider(height: 1, indent: 16, endIndent: 16),
+                                CustomListtile(
+                                  icon: Icons.language_outlined,
+                                  title: 'Language',
+                                  subtitle: 'Get from secure storage',
+                                  onTap: () {},
+                                ),
+                                const Divider(height: 1, indent: 16, endIndent: 16),
+                                CustomListtile(
+                                  icon: Icons.dark_mode_outlined,
+                                  title: 'Appearance',
+                                  subtitle: 'Get from secure storage',
+                                  onTap: () {},
+                                ),
+                              ],
+                            ),
                           ),
+                          const SizedBox(height: 24),
+                          _buildSectionHeader('Support'),
+                          const SizedBox(height: 8),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: Colors.grey.shade200, width: 1.5),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.02),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              children: [
+                                CustomListtile(
+                                  icon: Icons.help_center_outlined,
+                                  title: 'Help Center',
+                                  subtitle: 'FAQs and support',
+                                  onTap: () {},
+                                ),
+                                const Divider(height: 1, indent: 16, endIndent: 16),
+                                CustomListtile(
+                                  icon: Icons.article_outlined,
+                                  title: 'Term & Policies',
+                                  subtitle: 'Legal information',
+                                  onTap: () {},
+                                ),
 
-                          _buildMenuSection(
-                            title: 'Support',
-                            items: [
-                              CustomListtile(icon: Icons.help_outline_outlined, title: 'Help Center', subtitle: 'FAQs and support', onTap: () {}),
-                              CustomListtile(icon: Icons.article_outlined, title: 'Term & Policies', subtitle: 'Legal information', onTap: () {}),
-                            ],
+                              ],
+                            ),
                           ),
-
-
-
                           // Sign Out Option
+                          const SizedBox(height: 10),
                           CustomListtile(
                             icon: Icons.logout_rounded,
                             title: 'Sign Out',
@@ -214,47 +304,19 @@ class CustomerAccountMenu extends GetView<CustomerAccountController> {
     );
   }
 
-  Widget _buildMenuSection({required String title, required List<Widget> items}) {
-    List<Widget> childrenWithDividers = [];
-    for (int i = 0; i < items.length; i++) {
-      childrenWithDividers.add(items[i]);
-      if (i < items.length - 1) {
-        childrenWithDividers.add(const Divider(height: 1, indent: 16, endIndent: 16));
-      }
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 4.0),
-          child: Text(
-            title,
-            style: const TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF333333),
-            ),
-          ),
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      // Left padding adjusted to align natively with the rest of the layout edges
+      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      child: Text(
+        title.toUpperCase(), // Uppercased to match design image
+        style: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w700,
+          color: Color(0xFF333333),
         ),
-        const SizedBox(height: 10),
-        Container(
-          margin: const EdgeInsets.only(bottom: 20),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.grey.shade200, width: 1.5),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.015),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(children: childrenWithDividers),
-        ),
-      ],
+      ),
     );
   }
+
 }

@@ -59,6 +59,7 @@ class MainLayoutController extends GetxController {
         NavigationItemData(icon: Icons.home_outlined, activeIcon: Icons.home, label: 'Home', screen: const HomeView()),
         NavigationItemData(icon: Icons.shopping_cart_outlined, activeIcon: Icons.shopping_cart, label: 'Cart', screen: const Center(child: Text("Cart Content"))),
         NavigationItemData(icon: Icons.search_outlined, activeIcon: Icons.search, label: 'Search', screen: const Center(child: Text("Search Content"))),
+        NavigationItemData(icon: Icons.pending_actions_outlined, activeIcon: Icons.pending_actions, label: 'Activity', screen: const Center(child: Text("Activity Content"))),
         NavigationItemData(icon: Icons.person_outline, activeIcon: Icons.person, label: 'Account', screen: const AccountView()),
       ];
     }

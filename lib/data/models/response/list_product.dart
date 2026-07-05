@@ -2,18 +2,17 @@ class ListProduct {
   String? status;
   int? statusCode;
   ProductData? productData;
-  int? page; // 👈 🟢 1. Added page variable parameter for pagination tracking
 
-  // 2. Added to the optional constructor block parameters
-  ListProduct({this.status, this.statusCode, this.productData, this.page});
+  ListProduct({this.status, this.statusCode, this.productData});
 
   ListProduct.fromJson(Map<String, dynamic> json) {
     status = json['status'];
     statusCode = json['status_code'];
+    // Maps the nested 'data' object which contains the list and pagination metadata
     productData = json['data'] != null ? ProductData.fromJson(json['data']) : null;
-    page = json['page']; // (Optional) maps back if returned from server
   }
 
+  // Only include toJson if you intend to send this object to a POST/PUT endpoint
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['status'] = status;
@@ -21,15 +20,10 @@ class ListProduct {
     if (productData != null) {
       data['data'] = productData!.toJson();
     }
-    // 3. 🟢 Packing 'page' into the dynamic map conversion payload out to Dio
-    if (page != null) {
-      data['page'] = page;
-    }
     return data;
   }
 }
 
-// Renamed from Data to ProductData
 class ProductData {
   int? currentPage;
   int? lastPage;
@@ -65,7 +59,6 @@ class ProductData {
   }
 }
 
-// Renamed from Lists to ProductItem
 class ProductItem {
   int? id;
   String? name;
@@ -97,10 +90,10 @@ class ProductItem {
     id = json['id'];
     name = json['name'];
     slug = json['slug'];
-    basePrice = json['base_price'];
-    salePrice = json['sale_price'];
+    basePrice = json['base_price']?.toString(); // Ensure consistency
+    salePrice = json['sale_price']?.toString();
     discountPercent = json['discount_percent'];
-    ratingAvg = json['rating_avg'];
+    ratingAvg = json['rating_avg']?.toString();
     ratingCount = json['rating_count'];
     image = json['image'];
     thumbnail = json['thumbnail'];

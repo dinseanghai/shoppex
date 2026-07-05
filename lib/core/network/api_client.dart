@@ -104,11 +104,24 @@ class ApiClient extends GetxService {
     return await _dio.post('${ApiEndpoints.favonstore}/$storeId/favorite');
   }
 
-  Future<Response<dynamic>> listproduct(ListProduct res) async {
-    return await _dio.get(ApiEndpoints.listprodusts, data: res.toJson());
+  Future<Response<dynamic>> listproduct(ListProduct model, {int page = 1}) async {
+    return await _dio.get(
+      ApiEndpoints.listproducts,
+      queryParameters: {'page': page},
+    );
   }
+
   Future<Response<dynamic>> favOnProduct(int productId) async {
     return await _dio.post('${ApiEndpoints.favonproduct}/$productId/favorite');
   }
+
+  Future<Response<dynamic>> listProductByCategory({required int categoryId, int page = 1}) async {
+
+    return await _dio.get(
+      ApiEndpoints.listproducts, // <--- Is this the same endpoint as home?
+      queryParameters: {'category_id': categoryId, 'page': page},
+    );
+  }
+
 }
 

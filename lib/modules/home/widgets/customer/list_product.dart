@@ -176,24 +176,28 @@ class ProductCardItem extends GetView<CustomerController> {
                 Positioned(
                   top: 8,
                   right: 8,
-                  child: GestureDetector(
-                    onTap: () =>
-                        controller.onProductFavoriteClick(product),
-                    child: Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.9),
-                        shape: BoxShape.circle,
+                  child: Obx(() {
+                    // 1. Get the latest state of this specific product from the controller's list
+                    final index = controller.productList.indexWhere((p) => p.id == product.id);
+                    final currentProduct = index != -1 ? controller.productList[index] : product;
+                    final isFav = currentProduct.isFavorite == true;
+
+                    return GestureDetector(
+                      onTap: () => controller.onProductFavoriteClick(currentProduct),
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.9),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          isFav ? Icons.favorite : Icons.favorite_border,
+                          color: isFav ? Colors.red : Colors.black45,
+                          size: 18,
+                        ),
                       ),
-                      child: Icon(
-                        isFav
-                            ? Icons.favorite
-                            : Icons.favorite_border,
-                        color: isFav ? Colors.red : Colors.black45,
-                        size: 18,
-                      ),
-                    ),
-                  ),
+                    );
+                  }),
                 ),
               ],
             ),

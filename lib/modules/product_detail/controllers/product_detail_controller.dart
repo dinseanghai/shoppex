@@ -45,16 +45,15 @@ class ProductDetailController extends GetxController {
       isDetailsLoading.value = true;
       final customerCtrl = Get.find<CustomerController>();
 
-      // Utilize your existing CustomerController apiClient architecture
+      // FIX: Removed 'page: 1' as it no longer exists in the ListProduct model
       final response = await customerCtrl.apiClient.listproduct(
-        ListProduct(page: 1), // Pass extra structures if your endpoints demand an explicit id
+        ListProduct(),
       );
 
       if (response.statusCode == 200 && response.data != null) {
         final result = ListProduct.fromJson(response.data);
         final products = result.productData?.lists ?? [];
 
-        // Locate matching server structural records
         final matchedItem = products.firstWhereOrNull((element) => element.id.toString() == id);
         if (matchedItem != null) {
           rxProduct.value = matchedItem;

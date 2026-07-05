@@ -4,6 +4,10 @@ import '../modules/account/bindings/account_binding.dart';
 import '../modules/account/controllers/base_account_controller.dart';
 import '../modules/account/controllers/customer_account_controller.dart';
 import '../modules/account/views/account_view.dart';
+import '../modules/all_category/bindings/all_category_binding.dart';
+import '../modules/all_category/views/all_category_view.dart';
+import '../modules/category_products/bindings/category_products_binding.dart';
+import '../modules/category_products/views/category_products_view.dart';
 import '../modules/forget_password/bindings/forget_password_binding.dart';
 import '../modules/forget_password/views/forget_password_view.dart';
 import '../modules/home/bindings/home_binding.dart';
@@ -105,6 +109,16 @@ class AppPages {
       name: _Paths.STORE_DETAIL,
       page: () => const StoreDetailView(),
       binding: StoreDetailBinding(),
+    ),
+    GetPage(
+      name: _Paths.CATEGORY_PRODUCTS,
+      page: () => const CategoryProductsView(),
+      binding: CategoryProductsBinding(),
+    ),
+    GetPage(
+      name: _Paths.ALL_CATEGORY,
+      page: () => const AllCategoryView(),
+      binding: AllCategoryBinding(),
     ),
   ];
 }

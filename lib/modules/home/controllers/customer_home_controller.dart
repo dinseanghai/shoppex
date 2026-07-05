@@ -9,6 +9,7 @@ import '../../../data/models/response/store_favorite.dart';
 import '../../../routes/app_pages.dart';
 import '../../../shared/layouts/main_layout.dart';
 import '../../../shared/services/auth_service.dart';
+import '../../all_category/controllers/all_category_controller.dart';
 import '../widgets/add_favorite_bottombar.dart';
 import 'base_home_controller.dart';
 
@@ -179,6 +180,9 @@ class CustomerController extends BaseHomeController {
   }
 
   Future<void> fetchProducts({int page = 1}) async {
+    // 1. Guard against unnecessary calls
+    if (!networkService.isOnline.value) return;
+
     try {
       if (page == 1) {
         isLoading.value = true;
@@ -186,26 +190,34 @@ class CustomerController extends BaseHomeController {
         isMoreLoading.value = true;
       }
 
+      // 2. Call the API.
+      // We pass ListProduct() as an empty object (or with filters if needed),
+      // and pass the 'page' parameter as a separate argument to the apiClient.
       final response = await apiClient.listproduct(
-        ListProduct(page: page),
+        ListProduct(),
+        page: page,
       );
 
       if (response.statusCode == 200 && response.data != null) {
+        // 3. Parse the response
         final result = ListProduct.fromJson(response.data);
-
         final newProducts = result.productData?.lists ?? [];
 
+        // 4. Update pagination metadata
         currentPage = result.productData?.currentPage ?? page;
         lastPage = result.productData?.lastPage ?? 1;
 
+        // 5. Update the product list
         if (page == 1) {
           productList.assignAll(newProducts);
         } else {
           productList.addAll(newProducts);
         }
 
+        // 6. Refresh the state for the UI
         productList.refresh();
 
+        // 7. Check if we need to load more (for small screens)
         WidgetsBinding.instance.addPostFrameCallback((_) {
           _checkAutoLoad();
         });
@@ -213,11 +225,11 @@ class CustomerController extends BaseHomeController {
     } catch (e) {
       debugPrint('fetchProducts error: $e');
     } finally {
+      // 8. Ensure loading indicators are always turned off
       isLoading.value = false;
       isMoreLoading.value = false;
     }
   }
-
   // ======================================================
   // FAVORITES (STORE)
   // ======================================================
@@ -362,7 +374,18 @@ class CustomerController extends BaseHomeController {
     });
   }
 
-  void seeAllCategoryClick() {}
+  void refreshProductStatus() {
+    fetchProducts(page: 1);
+  }
+
+  void seeAllCategoryClick() {
+    requireLogin(() async {
+      if (!Get.isRegistered<AllCategoryController>()) {
+        Get.put(AllCategoryController());
+      }
+      Get.toNamed(Routes.ALL_CATEGORY);
+    });
+  }
   void featuredStoreClick() {}
   void trendingProductClick() {}
 }

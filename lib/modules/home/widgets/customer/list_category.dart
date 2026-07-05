@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 import '../../../../shared/widgets/loading_widget.dart';
+import '../../../category_products/bindings/category_products_binding.dart';
+import '../../../category_products/views/category_products_view.dart';
 import '../../controllers/customer_home_controller.dart';
 
 
@@ -54,15 +55,16 @@ class CategoryHorizontalList extends GetView<CustomerController> {
 
             return GestureDetector(
               onTap: () {
-                debugPrint(
-                  'Selected category: ${category.name}',
-                );
-
-                // TODO: Navigate to category page
-                // Get.toNamed(
-                //   Routes.CATEGORY,
-                //   arguments: category,
-                // );
+                Get.to(
+                      () => const CategoryProductsView(),
+                  binding: CategoryProductsBinding(),
+                  arguments: category,
+                )?.then((hasChanged) {
+                  if (hasChanged == true) {
+                    // Now this matches the method definition with 0 arguments!
+                    controller.refreshProductStatus();
+                  }
+                });
               },
               child: SizedBox(
                 width: _itemWidth,

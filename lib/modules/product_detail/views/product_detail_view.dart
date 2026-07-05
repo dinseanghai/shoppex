@@ -33,7 +33,7 @@ class ProductDetailView extends GetView<ProductDetailController> {
                 const Text("Product data unavailable", style: TextStyle(fontSize: 15, color: Colors.grey)),
                 const SizedBox(height: 16),
                 ElevatedButton(
-                  onPressed: () => Get.back(),
+                  onPressed: () => Get.back(result: true),
                   style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF3B59F6)),
                   child: const Text("Go Back", style: TextStyle(color: Colors.white)),
                 )

@@ -76,14 +76,14 @@ class CustomerHomeMenu extends GetView<CustomerController> {
 
                     _buildSectionTitle(
                       'Featured Stores',
-                      controller.featuredStoreClick,
+                      controller.seeAllStoreClick,
                     ),
 
                     const ListStoreView(),
 
                     _buildSectionTitle(
                       'Trending Products',
-                      controller.trendingProductClick,
+                      controller.seeAllProductClick,
                     ),
 
                     const SizedBox(height: 6),

@@ -386,6 +386,6 @@ class CustomerController extends BaseHomeController {
       Get.toNamed(Routes.ALL_CATEGORY);
     });
   }
-  void featuredStoreClick() {}
-  void trendingProductClick() {}
+  void seeAllStoreClick() {}
+  void seeAllProductClick() {}
 }

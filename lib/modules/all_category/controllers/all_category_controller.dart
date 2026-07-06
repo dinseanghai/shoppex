@@ -44,7 +44,11 @@ class AllCategoryController extends GetxController {
   }
 
   void selectCategory(String name) {
-    selectedCategoryName.value = name;
+    // Use .trim() to ensure hidden spaces from the API don't break string equality
+    selectedCategoryName.value = name.trim();
+
+    // Forces the reactive UI to rebuild manually in case GetX misses the update
+    categories.refresh();
   }
 
 }

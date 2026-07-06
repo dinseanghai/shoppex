@@ -31,6 +31,7 @@ class AllCategoryView extends GetView<AllCategoryController> {
             // Existing Body Content
             Expanded(
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // SIDEBAR
                   Container(
@@ -40,11 +41,14 @@ class AllCategoryView extends GetView<AllCategoryController> {
                       if (controller.isLoading.value) {
                         return const Center(child: CircularProgressIndicator());
                       }
+
+                      // Moving the ListView inside Obx ensures it rebuilds
+                      // whenever controller.selectedCategoryName changes!
                       return ListView.builder(
                         itemCount: controller.categories.length,
                         itemBuilder: (context, index) {
                           final category = controller.categories[index];
-                          final isSelected = controller.selectedCategoryName.value == category.name;
+                          final isSelected = controller.selectedCategoryName.value.trim() == (category.name ?? '').trim();
 
                           return InkWell(
                             onTap: () => controller.selectCategory(category.name ?? ''),
@@ -52,7 +56,9 @@ class AllCategoryView extends GetView<AllCategoryController> {
                               padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
                               decoration: BoxDecoration(
                                 color: isSelected ? Colors.white : Colors.transparent,
-                                border: isSelected ? const Border(left: BorderSide(color: Color(0xFF3B59F6), width: 3)) : null,
+                                border: isSelected
+                                    ? const Border(left: BorderSide(color: Color(0xFF3B59F6), width: 3))
+                                    : null,
                               ),
                               child: Padding(
                                 padding: const EdgeInsets.only(left: 8),

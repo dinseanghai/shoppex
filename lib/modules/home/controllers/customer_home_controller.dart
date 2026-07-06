@@ -386,6 +386,10 @@ class CustomerController extends BaseHomeController {
       Get.toNamed(Routes.ALL_CATEGORY);
     });
   }
-  void seeAllStoreClick() {}
+  void seeAllStoreClick() {
+    requireLogin(() async {
+      Get.toNamed(Routes.ALL_STORE);
+    });
+  }
   void seeAllProductClick() {}
 }

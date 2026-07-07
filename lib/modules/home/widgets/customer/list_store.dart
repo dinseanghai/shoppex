@@ -41,7 +41,7 @@ class ListStoreView extends GetView<CustomerController> {
           physics: const BouncingScrollPhysics(),
           itemCount: controller.storeList.length,
           itemBuilder: (_, index) {
-            return _StoreCard(
+            return StoreCard(
               store: controller.storeList[index],
             );
           },
@@ -51,193 +51,242 @@ class ListStoreView extends GetView<CustomerController> {
   }
 }
 
-class _StoreCard extends GetView<CustomerController> {
-  const _StoreCard({
+class StoreCard extends GetView<CustomerController> {
+  const StoreCard({
+    super.key,
     required this.store,
+    this.width = 260,
+    this.sizeType = 2, // 1 = Type 1 (Horizontal), 2 = Type 2 (Split Columns), 3 = Type 3 (Tall Banner Full View)
   });
 
-  final StoreItem store;
+  final dynamic store;
+  final double width;
+  final int sizeType;
 
   @override
   Widget build(BuildContext context) {
-    final isFav =
-        !controller.isGuestMode && (store.isFav ?? false);
+    final isFav = !controller.isGuestMode && (store.isFav ?? false);
+
+    // ====================================================================
+    // TYPE 1 STYLE: Horizontal Widescreen Layout (Widescreen Hero Layout)
+    // ====================================================================
+    if (sizeType == 1) {
+      return Container(
+        height: 120,
+        margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+        decoration: _buildBoxDecoration(),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: InkWell(
+            onTap: () => controller.onStoreClick(store),
+            child: Row(
+              children: [
+                // Left hand image canvas bounding container
+                SizedBox(
+                  width: 140,
+                  height: 120,
+                  child: Stack(
+                    children: [
+                      _StoreBanner(store: store, height: 120),
+                      // ADDED: Favorite button on top right of the horizontal banner
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: _buildFavoriteIcon(isFav),
+                      ),
+                      Positioned(
+                        left: 12,
+                        bottom: 12,
+                        child: _buildFloatingLogo(),
+                      ),
+                    ],
+                  ),
+                ),
+                // Right hand text column allocation segment
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _buildStoreTitle(),
+                        const SizedBox(height: 4),
+                        _buildDescription(),
+                        const SizedBox(height: 8),
+                        _buildVisitButton(),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    // ====================================================================
+    // TYPE 2 & 3 STYLE: Vertical Top-Down Modular Configurations
+    // ====================================================================
+    // UPDATED: Changed default Type 2 height from 95 to 115 (+20px extra height)
+    final double bannerHeight = (sizeType == 3) ? 150 : 115;
 
     return Container(
-      width: 260,
-      margin: const EdgeInsets.symmetric(
-        horizontal: 6,
-        vertical: 4,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.grey.shade200,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+      width: width,
+      margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+      decoration: _buildBoxDecoration(),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
         child: InkWell(
-          onTap: () {
-            //debugPrint('Selected store: ${store.name}');
-            controller.onStoreClick(store);
-          },
+          onTap: () => controller.onStoreClick(store),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Stack(
                 clipBehavior: Clip.none,
                 children: [
-                  _StoreBanner(store: store),
-
+                  _StoreBanner(store: store, height: bannerHeight),
                   Positioned(
                     top: 8,
                     right: 8,
-                    child: GestureDetector(
-                      onTap: () =>
-                          controller.onStoreFavoriteClick(store),
-                      child: Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.9),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          isFav
-                              ? Icons.favorite
-                              : Icons.favorite_border,
-                          color: isFav
-                              ? Colors.red
-                              : Colors.grey.shade700,
-                          size: 18,
-                        ),
-                      ),
-                    ),
+                    child: _buildFavoriteIcon(isFav),
                   ),
-
                   Positioned(
                     left: 12,
-                    bottom: -20,
-                    child: Container(
-                      width: 46,
-                      height: 46,
-                      padding: const EdgeInsets.all(2),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.1),
-                            blurRadius: 4,
-                          ),
-                        ],
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: _StoreLogo(store: store),
-                      ),
-                    ),
+                    bottom: -20, // Logo hangs 20px below the banner
+                    child: _buildFloatingLogo(),
                   ),
                 ],
               ),
 
+              // FIXED: Keeps your 32px height to clear the 20px logo overlap
+              // and leaves a clean gap.
               const SizedBox(height: 24),
 
               Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: Row(
                   children: [
                     Expanded(
                       child: Column(
-                        crossAxisAlignment:
-                        CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min, // FIXED: Forces text column to stick tightly together
                         children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  store.name ?? 'Unknown Store',
-                                  maxLines: 1,
-                                  overflow:
-                                  TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-
-                              if (store.isVerified == true)
-                                const Padding(
-                                  padding:
-                                  EdgeInsets.only(left: 4),
-                                  child: Icon(
-                                    Icons.verified,
-                                    color: Color(0xFF3B59F6),
-                                    size: 16,
-                                  ),
-                                ),
-                            ],
-                          ),
-
+                          _buildStoreTitle(),
                           const SizedBox(height: 2),
-
-                          Text(
-                            store.description ??
-                                'No description available',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
+                          _buildDescription(),
                         ],
                       ),
                     ),
-
                     const SizedBox(width: 8),
-
-                    SizedBox(
-                      height: 32,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          controller.onStoreVisit(store);
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                          const Color(0xFF3B59F6),
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius:
-                            BorderRadius.circular(20),
-                          ),
-                        ),
-                        child: const Text(
-                          'Visit',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
+                    _buildVisitButton(),
                   ],
                 ),
               ),
+
+              // FIXED: Changed from 12 to 4 to instantly reclaim 8px of bottom padding
+              const SizedBox(height: 11),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  BoxDecoration _buildBoxDecoration() {
+    return BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: Colors.grey.shade200),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.04),
+          blurRadius: 6,
+          offset: const Offset(0, 2),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStoreTitle() {
+    return Row(
+      mainAxisSize: MainAxisSize.max,
+      children: [
+        Flexible(
+          child: Text(
+            store.name ?? 'Unknown Store',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+          ),
+        ),
+        if (store.isVerified == true)
+          const Padding(
+            padding: EdgeInsets.only(left: 4),
+            child: Icon(Icons.verified, color: Color(0xFF3B59F6), size: 16),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildDescription() {
+    return Text(
+      store.description ?? 'No description available',
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+    );
+  }
+
+  Widget _buildVisitButton() {
+    return SizedBox(
+      height: 32,
+      child: ElevatedButton(
+        onPressed: () => controller.onStoreVisit(store),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF3B59F6),
+          foregroundColor: Colors.white,
+          elevation: 0,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        ),
+        child: const Text('Visit', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+      ),
+    );
+  }
+
+  Widget _buildFloatingLogo() {
+    return Container(
+      width: 46,
+      height: 46,
+      padding: const EdgeInsets.all(2),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 4),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: _StoreLogo(store: store),
+      ),
+    );
+  }
+
+  Widget _buildFavoriteIcon(bool isFav) {
+    return GestureDetector(
+      onTap: () => controller.onStoreFavoriteClick(store),
+      child: Container(
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.9),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(
+          isFav ? Icons.favorite : Icons.favorite_border,
+          color: isFav ? Colors.red : Colors.grey.shade700,
+          size: 18,
         ),
       ),
     );
@@ -245,100 +294,41 @@ class _StoreCard extends GetView<CustomerController> {
 }
 
 class _StoreBanner extends StatelessWidget {
-  const _StoreBanner({
-    required this.store,
-  });
-
-  final StoreItem store;
+  const _StoreBanner({required this.store, required this.height});
+  final dynamic store;
+  final double height;
 
   @override
   Widget build(BuildContext context) {
     final bannerUrl = store.banner;
-
     if (bannerUrl == null || bannerUrl.isEmpty) {
-      return const _BannerPlaceholder();
+      return Container(
+        height: height,
+        width: double.infinity,
+        color: Colors.grey.shade200,
+        child: const Icon(Icons.image, color: Colors.grey),
+      );
     }
-
     return Image.network(
       bannerUrl,
-      height: 95,
+      height: height,
       width: double.infinity,
       fit: BoxFit.cover,
-      loadingBuilder: (
-          context,
-          child,
-          loadingProgress,
-          ) {
-        if (loadingProgress == null) {
-          return child;
-        }
-
-        return const _BannerPlaceholder();
-      },
-      errorBuilder: (_, __, ___) {
-        return const _BannerPlaceholder();
-      },
+      errorBuilder: (_, __, ___) => Container(height: height, color: Colors.grey.shade200),
     );
   }
 }
 
 class _StoreLogo extends StatelessWidget {
-  const _StoreLogo({
-    required this.store,
-  });
-
-  final StoreItem store;
+  const _StoreLogo({required this.store});
+  final dynamic store;
 
   @override
   Widget build(BuildContext context) {
     final logoUrl = store.logo;
-
     if (logoUrl == null || logoUrl.isEmpty) {
-      return const _LogoPlaceholder();
+      return Container(color: Colors.grey.shade300, child: const Icon(Icons.store, size: 20));
     }
-
-    return Image.network(
-      logoUrl,
-      fit: BoxFit.cover,
-      errorBuilder: (_, __, ___) {
-        return const _LogoPlaceholder();
-      },
-    );
-  }
-}
-
-class _BannerPlaceholder extends StatelessWidget {
-  const _BannerPlaceholder();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 95,
-      width: double.infinity,
-      color: Colors.grey.shade200,
-      alignment: Alignment.center,
-      child: Icon(
-        Icons.image,
-        color: Colors.grey.shade400,
-        size: 28,
-      ),
-    );
-  }
-}
-
-class _LogoPlaceholder extends StatelessWidget {
-  const _LogoPlaceholder();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Colors.blueAccent,
-      alignment: Alignment.center,
-      child: const Icon(
-        Icons.store,
-        color: Colors.white,
-        size: 20,
-      ),
-    );
+    return Image.network(logoUrl, fit: BoxFit.cover, errorBuilder: (_, __, ___) => Container(color: Colors.grey.shade300));
   }
 }

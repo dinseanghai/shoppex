@@ -7,7 +7,7 @@ import '../../controllers/customer_home_controller.dart';
 class ListStoreView extends GetView<CustomerController> {
   const ListStoreView({super.key});
 
-  static const double _height = 200;
+  static const double _height = 210;
 
   @override
   Widget build(BuildContext context) {
@@ -81,14 +81,12 @@ class StoreCard extends GetView<CustomerController> {
             onTap: () => controller.onStoreClick(store),
             child: Row(
               children: [
-                // Left hand image canvas bounding container
                 SizedBox(
                   width: 140,
                   height: 120,
                   child: Stack(
                     children: [
                       _StoreBanner(store: store, height: 120),
-                      // ADDED: Favorite button on top right of the horizontal banner
                       Positioned(
                         top: 8,
                         right: 8,
@@ -102,7 +100,6 @@ class StoreCard extends GetView<CustomerController> {
                     ],
                   ),
                 ),
-                // Right hand text column allocation segment
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -112,7 +109,7 @@ class StoreCard extends GetView<CustomerController> {
                       children: [
                         _buildStoreTitle(),
                         const SizedBox(height: 4),
-                        _buildDescription(),
+                        _buildRating(), // CHANGED: Replaced description with ratings
                         const SizedBox(height: 8),
                         _buildVisitButton(),
                       ],
@@ -129,7 +126,6 @@ class StoreCard extends GetView<CustomerController> {
     // ====================================================================
     // TYPE 2 & 3 STYLE: Vertical Top-Down Modular Configurations
     // ====================================================================
-    // UPDATED: Changed default Type 2 height from 95 to 115 (+20px extra height)
     final double bannerHeight = (sizeType == 3) ? 150 : 115;
 
     return Container(
@@ -154,14 +150,12 @@ class StoreCard extends GetView<CustomerController> {
                   ),
                   Positioned(
                     left: 12,
-                    bottom: -20, // Logo hangs 20px below the banner
+                    bottom: -20,
                     child: _buildFloatingLogo(),
                   ),
                 ],
               ),
 
-              // FIXED: Keeps your 32px height to clear the 20px logo overlap
-              // and leaves a clean gap.
               const SizedBox(height: 24),
 
               Padding(
@@ -171,11 +165,11 @@ class StoreCard extends GetView<CustomerController> {
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min, // FIXED: Forces text column to stick tightly together
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           _buildStoreTitle(),
-                          const SizedBox(height: 2),
-                          _buildDescription(),
+                          const SizedBox(height: 4),
+                          _buildRating(), // CHANGED: Replaced description with ratings
                         ],
                       ),
                     ),
@@ -185,7 +179,6 @@ class StoreCard extends GetView<CustomerController> {
                 ),
               ),
 
-              // FIXED: Changed from 12 to 4 to instantly reclaim 8px of bottom padding
               const SizedBox(height: 11),
             ],
           ),
@@ -230,12 +223,46 @@ class StoreCard extends GetView<CustomerController> {
     );
   }
 
-  Widget _buildDescription() {
-    return Text(
-      store.description ?? 'No description available',
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-      style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+  // ADDED: Replaces the old description implementation completely
+  Widget _buildRating() {
+    // Gracefully handle fields whether it's coming from ListStore or DetailStore structure
+    final double displayStar = (store.ratingsAvg ?? store.rating?.star ?? 0).toDouble();
+    final int displayCount = store.ratingsCount ?? store.rating?.count ?? 0;
+
+    // Convert counts to clean display representations (e.g., 2100 -> 2.1k)
+    String formatCount(int count) {
+      if (count >= 1000) {
+        return '${(count / 1000).toStringAsFixed(1)}k';
+      }
+      return count.toString();
+    }
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Icon(
+          Icons.star,
+          color: Colors.orange, // Matches your reference image
+          size: 16,
+        ),
+        const SizedBox(width: 4),
+        Text(
+          displayStar.toStringAsFixed(1),
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
+        ),
+        const SizedBox(width: 4),
+        Text(
+          '(${formatCount(displayCount)})',
+          style: TextStyle(
+            fontSize: 13,
+            color: Colors.grey.shade600,
+          ),
+        ),
+      ],
     );
   }
 

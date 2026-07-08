@@ -1,22 +1,20 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shoppex/data/models/response/list_store.dart';
-
 import '../../home/controllers/customer_home_controller.dart';
 
 class StoreDetailController extends GetxController {
-  final double staticRating = 4.8;
-  final String staticReviewCount = "(12.2k+ Reviews)";
-
-  double get rating => staticRating;
-  String get reviewCount => staticReviewCount;
-
-  // The store model
+  var isPhoneClicked = false.obs;
+  var isEmailClicked = false.obs;
+  // The reactive store model frame
   final Rxn<StoreItem> rxStore = Rxn<StoreItem>();
 
-  // Explicitly reactive boolean for the Favorite state
+  // Explicitly reactive boolean for the Favorite state heart icon
   final RxBool isFav = false.obs;
 
-  final RxBool isDetailsLoading = false.obs;
+  // Computed properties extracted straight from the live reactive store model
+  double get ratingsAvg => (rxStore.value?.ratingsAvg ?? rxStore.value?.rating?.star ?? 0.0).toDouble();
+  int get ratingsCount => rxStore.value?.ratingsCount ?? rxStore.value?.rating?.count ?? 0;
 
   @override
   void onInit() {
@@ -25,40 +23,80 @@ class StoreDetailController extends GetxController {
   }
 
   void _initializeStore() {
-    // 1. Initial lookup
+    // 1. Instantly read preview parameters from the previous list view arguments frame
     if (Get.arguments != null && Get.arguments is StoreItem) {
       rxStore.value = Get.arguments as StoreItem;
       isFav.value = rxStore.value?.isFav ?? false;
-    }
 
-    // 2. Fallback network request
-    final String? storeIdStr = Get.parameters['id'];
-    if (storeIdStr != null && rxStore.value == null) {
-      fetchStoreDetails(storeIdStr);
+      // 2. Fetch missing deep fields (like productCount and activatedAt) seamlessly in the background
+      if (rxStore.value?.id != null) {
+        _fetchBackgroundDetails(rxStore.value!.id);
+      }
     }
   }
 
-  Future<void> fetchStoreDetails(String id) async {
+  // Core Background Network Synchronizer
+  Future<void> _fetchBackgroundDetails(dynamic storeId) async {
     try {
-      isDetailsLoading.value = true;
+
+      // Look up your ApiClient inside GetX and trigger your new endpoint method
       final customerCtrl = Get.find<CustomerController>();
-      final response = await customerCtrl.apiClient.liststore(ListStore());
+      final response = await customerCtrl.apiClient.storeDetail(storeId.toString());
 
       if (response.statusCode == 200 && response.data != null) {
-        final result = ListStore.fromJson(response.data);
-        final stores = result.storeData?.lists ?? [];
-        final matchedStore = stores.firstWhereOrNull((s) => s.id.toString() == id);
+        // Parse raw network map structure into your detail wrapper model
+        final result = DetailStore.fromJson(response.data);
 
-        if (matchedStore != null) {
-          rxStore.value = matchedStore;
-          // Sync the reactive variable with the loaded data
-          isFav.value = matchedStore.isFav ?? false;
+        if (result.storeData != null) {
+          final freshData = result.storeData!;
+
+          // 3. Update ONLY the missing deep parameters inside the existing model space.
+          // This modifies the UI text strings instantly without blinking layouts!
+          rxStore.update((val) {
+            val?.activatedAt = freshData.activatedAt;
+            val?.ratingsAvg = freshData.ratingsAvg;
+            val?.ratingsCount = freshData.ratingsCount;
+            val?.productCount = freshData.productCount; // <-- This changes Out of Stock to Low/In Stock!
+            val?.products = freshData.products;
+            val?.myRating = freshData.myRating;
+          });
         }
       }
+    } catch (e, stackTrace) {
+      debugPrint("❌ Background data sync crashed!");
+      debugPrint("❌ Error: $e");
+      debugPrint("❌ StackTrace: $stackTrace");
+    }
+  }
+
+  // Calculates store lifetime completely client-side without flickering
+  String get storeLifetime {
+    final String? activatedAtStr = rxStore.value?.activatedAt;
+
+    // While background network fetch hasn't arrived, show an elegant static text indicator
+    if (activatedAtStr == null) return "...";
+
+    try {
+      final DateTime activationDate = DateTime.parse(activatedAtStr);
+      final DateTime now = DateTime.now();
+
+      final DateTime today = DateTime(now.year, now.month, now.day);
+      final DateTime activeDay = DateTime(activationDate.year, activationDate.month, activationDate.day);
+      final int dayDifference = today.difference(activeDay).inDays;
+
+      if (dayDifference >= 365) {
+        final int years = (dayDifference / 365).floor();
+        return "Active for $years ${years == 1 ? 'year' : 'years'}";
+      } else if (dayDifference >= 30) {
+        final int months = (dayDifference / 30).floor();
+        return "Active for $months ${months == 1 ? 'month' : 'months'}";
+      } else if (dayDifference > 0) {
+        return "Active for $dayDifference ${dayDifference == 1 ? 'day' : 'days'}";
+      } else {
+        return "Joined today";
+      }
     } catch (e) {
-      // Handle error
-    } finally {
-      isDetailsLoading.value = false;
+      return "Active Partner";
     }
   }
 
@@ -66,13 +104,8 @@ class StoreDetailController extends GetxController {
     final store = rxStore.value;
     if (store == null) return;
 
-    // 1. Update internal reactive state for immediate UI feedback
     isFav.value = !isFav.value;
-
-    // 2. Update the model instance
     store.isFav = isFav.value;
-
-    // 3. Proxy the action to your CustomerController
     Get.find<CustomerController>().onStoreFavoriteClick(store);
   }
 }

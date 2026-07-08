@@ -11,6 +11,7 @@ class ApiEndpoints {
   static String get listslideshow => '${AppConfig.baseUrl}/api/v1/slide-shows';
   static String get listcategory => '${AppConfig.baseUrl}/api/v1/categories';
   static String get liststore => '${AppConfig.baseUrl}/api/v1/stores';
+  static String get storedetail => '${AppConfig.baseUrl}/api/v1/stores';
   static String get favonstore => '${AppConfig.baseUrl}/api/v1/stores';
   static String get listproducts => '${AppConfig.baseUrl}/api/v1/products';
   static String get favonproduct => '${AppConfig.baseUrl}/api/v1/products';

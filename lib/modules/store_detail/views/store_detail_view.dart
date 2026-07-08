@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:shoppex/core/constants/app_colors.dart';
-import '../../account/widgets/switch_account_type.dart';
 import '../controllers/store_detail_controller.dart';
 import '../widgets/store_profile.dart';
-
+import 'package:cached_network_image/cached_network_image.dart';
 
 class StoreDetailView extends GetView<StoreDetailController> {
   const StoreDetailView({super.key});
@@ -27,54 +26,62 @@ class StoreDetailView extends GetView<StoreDetailController> {
         ),
         child: Stack(
           children: [
-            // 1. The ScrollView
+            // 1. Core ScrollView Layout
             Positioned.fill(
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Adjusted space for profile image overlap
                       SizedBox(height: headerHeight + statusBarHeight + 20),
-                      StoreProfile(),
-                      const SizedBox(height: 16),
-                      _buildSectionTitle('Categories'),
-                      const SizedBox(height: 20),
+                      const StoreProfile(),
+                      const SizedBox(height: 24),
 
-                      SwitchAccountType(
-                        icon: Icons.storefront_outlined,
-                        title: 'Become a Seller',
-                        description: 'Start selling and reach millions of customers',
-                        onTap: () {},
-                      ),
-                      _buildSectionTitle('Top Deals', onViewAllTap: () {
-                        // navigate to see all
+                      // Reactive dynamic inventory products conditional grid block
+                      Obx(() {
+                        final store = controller.rxStore.value;
+                        final products = store?.products;
+
+                        if (products == null || products.isEmpty) {
+                          return Center(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 40),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.shopping_bag_outlined,
+                                    size: 64,
+                                    color: Colors.grey.shade400,
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    'No products available yet.',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      color: Colors.grey.shade600,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }
+
+                        return const SizedBox.shrink();
                       }),
-                      const SizedBox(height: 20),
-                      SwitchAccountType(
-                        icon: Icons.storefront_outlined,
-                        title: 'Become a Seller',
-                        description: 'Start selling and reach millions of customers',
-                        onTap: () {},
-                      ),
-                      _buildSectionTitle('All Products', onViewAllTap: () {
-                        // navigate to see all
-                      }),
+
                       const SizedBox(height: 40),
-                      SwitchAccountType(
-                        icon: Icons.storefront_outlined,
-                        title: 'Become a Seller',
-                        description: 'Start selling and reach millions of customers',
-                        onTap: () {},
-                      ),
                     ],
                   ),
                 ),
               ),
             ),
 
-            // 2. The Banner
+            // 2. The Store Banner Layer (Cached via device memory)
             Positioned(
               top: 0,
               left: 0,
@@ -82,25 +89,29 @@ class StoreDetailView extends GetView<StoreDetailController> {
               height: bannerHeight + statusBarHeight,
               child: Obx(() {
                 final store = controller.rxStore.value;
-                if (controller.isDetailsLoading.value || store == null) {
+                if (store == null || (store.banner ?? '').isEmpty) {
                   return Container(color: Colors.grey[300]);
                 }
-                return Image.network(
-                  store.banner ?? '',
+
+                return CachedNetworkImage(
+                  imageUrl: store.banner!,
                   fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) =>
-                  const Center(child: Icon(Icons.broken_image, color: Colors.white)),
+                  placeholder: (context, url) => Container(color: Colors.grey[200]),
+                  errorWidget: (context, url, error) => Container(
+                    color: Colors.grey[300],
+                    child: const Icon(Icons.broken_image, color: Colors.white),
+                  ),
                 );
               }),
             ),
 
-            // 3. The Profile Image (Overlapping the Banner)
+            // 3. The Overlapping Rectangle Logo
             Positioned(
               top: (bannerHeight + statusBarHeight) - 90,
-              left: 24, // Matches your horizontal padding
+              left: 24,
               right: 24,
               child: Align(
-                alignment: Alignment.centerLeft, // This moves only the logo container to the left
+                alignment: Alignment.centerLeft,
                 child: Container(
                   padding: const EdgeInsets.all(4),
                   decoration: const BoxDecoration(
@@ -116,29 +127,38 @@ class StoreDetailView extends GetView<StoreDetailController> {
                     final imagePath = store?.logo ?? '';
                     final bool hasNoImage = imagePath.isEmpty || imagePath == "null" || imagePath.trim().isEmpty;
 
-                    return Container(
-                      width: 130,
-                      height: 130,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[100],
-                        borderRadius: BorderRadius.circular(20),
-                        image: !hasNoImage
-                            ? DecorationImage(
-                          image: NetworkImage(imagePath),
-                          fit: BoxFit.cover,
-                        )
-                            : null,
+                    if (hasNoImage) {
+                      return Container(
+                        width: 130,
+                        height: 130,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[100],
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Icon(Icons.person, size: 48, color: Colors.grey),
+                      );
+                    }
+
+                    return ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: CachedNetworkImage(
+                        width: 130,
+                        height: 130,
+                        imageUrl: imagePath,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Container(color: Colors.grey[100]),
+                        errorWidget: (context, url, error) => Container(
+                          color: Colors.grey[100],
+                          child: const Icon(Icons.person, size: 48, color: Colors.grey),
+                        ),
                       ),
-                      child: hasNoImage
-                          ? const Icon(Icons.person, size: 48, color: Colors.grey)
-                          : null,
                     );
                   }),
                 ),
               ),
             ),
 
-            // 4. Pinned Action Buttons
+            // 4. Floating Action Header Navigation Row
             Positioned(
               top: statusBarHeight + 8,
               left: 16,
@@ -186,37 +206,4 @@ class StoreDetailView extends GetView<StoreDetailController> {
       ),
     );
   }
-
-  Widget _buildSectionTitle(
-      String title, {
-        VoidCallback? onViewAllTap, // Made optional by making it nullable
-      }) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
-        ),
-        // Only show the button if onViewAllTap is provided
-        if (onViewAllTap != null)
-          TextButton(
-            onPressed: onViewAllTap,
-            child: const Text(
-              'See All',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.blueAccent,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-
 }

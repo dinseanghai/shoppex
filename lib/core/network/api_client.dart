@@ -123,5 +123,9 @@ class ApiClient extends GetxService {
     );
   }
 
+  Future<Response<dynamic>> storeDetail(String id) async {
+    return await _dio.get("${ApiEndpoints.storedetail}/$id");
+  }
+
 }
 

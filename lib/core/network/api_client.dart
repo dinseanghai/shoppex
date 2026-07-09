@@ -15,7 +15,6 @@ import '../../data/models/request/resent_otp_model.dart';
 import '../../data/models/response/list_product.dart';
 import '../../data/models/response/list_slide.dart';
 
-
 class ApiClient extends GetxService {
   late Dio _dio;
 
@@ -62,9 +61,7 @@ class ApiClient extends GetxService {
   Future<Response<dynamic>> logout(String token) async {
     return await _dio.post(
       ApiEndpoints.logout,
-      options: Options(
-        headers: {'Authorization': 'Bearer $token'},
-      ),
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
     );
   }
 
@@ -80,7 +77,7 @@ class ApiClient extends GetxService {
     return await _dio.post(ApiEndpoints.resendotp, data: req.toJson());
   }
 
-  Future<Response<dynamic>> forgetpassword(ForgetPasswordReg reg) async{
+  Future<Response<dynamic>> forgetpassword(ForgetPasswordReg reg) async {
     return await _dio.post(ApiEndpoints.forgetpassword, data: reg.toJson());
   }
 
@@ -89,22 +86,28 @@ class ApiClient extends GetxService {
   }
 
   Future<Response<dynamic>> listslideshow(SlideShow res) async {
-    return await _dio.get(ApiEndpoints.listslideshow, data:  res.toJson());
+    return await _dio.get(ApiEndpoints.listslideshow, data: res.toJson());
   }
 
   Future<Response<dynamic>> listcategory(ListCategory res) async {
     return await _dio.get(ApiEndpoints.listcategory, data: res.toJson());
   }
 
-  Future<Response<dynamic>> liststore(ListStore res) async {
-    return await _dio.get(ApiEndpoints.liststore, data: res.toJson());
+  Future<Response<dynamic>> liststore({int page = 1}) async {
+    return await _dio.get(
+      ApiEndpoints.liststore,
+      queryParameters: {'page': page},
+    );
   }
 
   Future<Response<dynamic>> favonstore(int storeId) async {
     return await _dio.post('${ApiEndpoints.favonstore}/$storeId/favorite');
   }
 
-  Future<Response<dynamic>> listproduct(ListProduct model, {int page = 1}) async {
+  Future<Response<dynamic>> listproduct(
+    ListProduct model, {
+    int page = 1,
+  }) async {
     return await _dio.get(
       ApiEndpoints.listproducts,
       queryParameters: {'page': page},
@@ -115,8 +118,10 @@ class ApiClient extends GetxService {
     return await _dio.post('${ApiEndpoints.favonproduct}/$productId/favorite');
   }
 
-  Future<Response<dynamic>> listProductByCategory({required int categoryId, int page = 1}) async {
-
+  Future<Response<dynamic>> listProductByCategory({
+    required int categoryId,
+    int page = 1,
+  }) async {
     return await _dio.get(
       ApiEndpoints.listproducts, // <--- Is this the same endpoint as home?
       queryParameters: {'category_id': categoryId, 'page': page},
@@ -126,6 +131,4 @@ class ApiClient extends GetxService {
   Future<Response<dynamic>> storeDetail(String id) async {
     return await _dio.get("${ApiEndpoints.storedetail}/$id");
   }
-
 }
-

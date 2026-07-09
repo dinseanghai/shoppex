@@ -10,7 +10,7 @@ import '../../controllers/customer_home_controller.dart';
 class CategoryHorizontalList extends GetView<CustomerController> {
   const CategoryHorizontalList({super.key});
 
-  static const double _height = 100;
+  static const double _height = 95; // Ensure this matches the parent wrapper!
   static const double _itemWidth = 80;
 
   @override
@@ -19,8 +19,7 @@ class CategoryHorizontalList extends GetView<CustomerController> {
       // ======================================================
       // LOADING STATE
       // ======================================================
-      if (controller.isLoading.value &&
-          controller.categories.isEmpty) {
+      if (controller.isLoading.value && controller.categories.isEmpty) {
         return const SizedBox(
           height: _height,
           child: Center(
@@ -61,7 +60,6 @@ class CategoryHorizontalList extends GetView<CustomerController> {
                   arguments: category,
                 )?.then((hasChanged) {
                   if (hasChanged == true) {
-                    // Now this matches the method definition with 0 arguments!
                     controller.refreshProductStatus();
                   }
                 });
@@ -69,10 +67,12 @@ class CategoryHorizontalList extends GetView<CustomerController> {
               child: SizedBox(
                 width: _itemWidth,
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Container(
-                      width: 52,
-                      height: 52,
+                      width: 54,
+                      height: 54,
                       decoration: BoxDecoration(
                         color: Colors.grey.shade100,
                         shape: BoxShape.circle,
@@ -84,20 +84,22 @@ class CategoryHorizontalList extends GetView<CustomerController> {
                       ),
                     ),
 
-                    const SizedBox(height: 6),
-
-                    SizedBox(
-                      height: 34,
-                      child: Text(
-                        category.name ?? '',
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black87,
-                          height: 1.2,
+                    // Wrapped in Expanded so if the text hits the max
+                    // height available, it clips safely with ellipsis (...)
+                    // instead of throwing layout overflow exceptions.
+                    Expanded(
+                      child: Center(
+                        child: Text(
+                          category.name ?? '',
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black87,
+                            height: 1.1,
+                          ),
                         ),
                       ),
                     ),

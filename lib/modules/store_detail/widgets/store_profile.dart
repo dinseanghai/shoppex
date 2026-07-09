@@ -43,7 +43,7 @@ class StoreProfile extends GetView<StoreDetailController> {
               Icon(
                 Icons.verified,
                 color: (store.isVerified == true) ? const Color(0xFF3B59F6) : Colors.grey,
-                size: 20,
+                size: 18,
               ),
             ],
           ),

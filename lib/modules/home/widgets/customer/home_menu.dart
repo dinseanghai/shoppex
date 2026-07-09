@@ -69,10 +69,11 @@ class CustomerHomeMenu extends GetView<CustomerController> {
                       'Shop by Category',
                       controller.seeAllCategoryClick,
                     ),
+                    const SizedBox(height: 6),
 
-                    const SizedBox(height: 10),
-
-                    const CategoryHorizontalList(),
+                    SizedBox(
+                        height: 95,
+                        child: const CategoryHorizontalList()),
 
                     _buildSectionTitle(
                       'Featured Stores',

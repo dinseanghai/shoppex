@@ -99,7 +99,7 @@ class StoreDetailView extends GetView<StoreDetailController> {
                   placeholder: (context, url) => Container(color: Colors.grey[200]),
                   errorWidget: (context, url, error) => Container(
                     color: Colors.grey[300],
-                    child: const Icon(Icons.broken_image, color: Colors.white),
+                    child: const Icon(Icons.broken_image, color: Colors.grey),
                   ),
                 );
               }),
@@ -135,7 +135,7 @@ class StoreDetailView extends GetView<StoreDetailController> {
                           color: Colors.grey[100],
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        child: const Icon(Icons.person, size: 48, color: Colors.grey),
+                        child: const Icon(Icons.store, size: 48, color: Colors.grey),
                       );
                     }
 

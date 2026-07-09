@@ -171,7 +171,7 @@ class CustomerController extends BaseHomeController {
 
   Future<void> fetchStores() async {
     try {
-      final response = await apiClient.liststore(ListStore());
+      final response = await apiClient.liststore(page: 1);
       if (response.statusCode == 200 && response.data != null) {
         final result = ListStore.fromJson(response.data);
         storeList.assignAll(result.storeData?.lists ?? []);

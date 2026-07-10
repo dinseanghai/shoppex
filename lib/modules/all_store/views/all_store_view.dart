@@ -58,50 +58,51 @@ class AllStoresView extends GetView<AllStoreController> {
                   itemCount: controller.storeList.length,
                   separatorBuilder: (_, __) => const SizedBox(width: 16),
                   itemBuilder: (context, index) {
-                    final store = controller.storeList[index];
-
-                    return Column(
-                      children: [
-                        GestureDetector(
-                          onTap: () => Get.toNamed(
-                            Routes.STORE_DETAIL,
-                            arguments: store,
-                          ),
-                          child: Container(
-                            padding: const EdgeInsets.all(2),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: Colors.blueAccent,
-                                width: 2,
+                    return Obx(() {
+                      final store = controller.storeList[index];
+                      return Column(
+                        children: [
+                          GestureDetector(
+                            onTap: () => Get.toNamed(
+                              Routes.STORE_DETAIL, // Replace with your actual Routes.STORE_DETAIL
+                              arguments: store,
+                            ),
+                            child: Container(
+                              padding: const EdgeInsets.all(2),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.blueAccent,
+                                  width: 2,
+                                ),
+                              ),
+                              child: CircleAvatar(
+                                radius: 28,
+                                backgroundColor: Colors.grey.shade200,
+                                backgroundImage:
+                                store.logo != null && store.logo!.isNotEmpty
+                                    ? NetworkImage(store.logo!)
+                                    : null,
                               ),
                             ),
-                            child: CircleAvatar(
-                              radius: 28,
-                              backgroundColor: Colors.grey.shade200,
-                              backgroundImage:
-                              store.logo != null && store.logo!.isNotEmpty
-                                  ? NetworkImage(store.logo!)
-                                  : null,
+                          ),
+                          const SizedBox(height: 8),
+                          SizedBox(
+                            width: 60,
+                            child: Text(
+                              store.name ?? '',
+                              textAlign: TextAlign.center,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        SizedBox(
-                          width: 60,
-                          child: Text(
-                            store.name ?? '',
-                            textAlign: TextAlign.center,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ],
-                    );
+                        ],
+                      );
+                    });
                   },
                 ),
               ),
@@ -121,8 +122,6 @@ class AllStoresView extends GetView<AllStoreController> {
                         mainAxisSpacing: 12,
                         crossAxisSpacing: 12,
                         children: List.generate(controller.storeList.length, (index) {
-                          final store = controller.storeList[index];
-
                           // Balanced 6-item loop sequence
                           final int patternIndex = index % 6;
 
@@ -139,11 +138,15 @@ class AllStoresView extends GetView<AllStoreController> {
 
                           return StaggeredGridTile.fit(
                             crossAxisCellCount: isFullWidth ? 2 : 1,
-                            child: StoreCard(
-                              store: store,
-                              width: double.infinity,
-                              sizeType: cardSizeType,
-                            ),
+                            // Added local Obx here to track individual element changes on pagination
+                            child: Obx(() {
+                              final store = controller.storeList[index];
+                              return StoreCard(
+                                store: store,
+                                width: double.infinity,
+                                sizeType: cardSizeType,
+                              );
+                            }),
                           );
                         }),
                       ),
@@ -184,7 +187,7 @@ class AllStoresView extends GetView<AllStoreController> {
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
+            color: Colors.black.withAlpha((0.08 * 255).toInt()),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),

@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:shoppex/core/constants/app_colors.dart';
+import '../../../data/models/response/list_product.dart';
+import '../../home/controllers/customer_home_controller.dart';
+import '../../home/widgets/customer/list_product.dart';
 import '../controllers/store_detail_controller.dart';
 import '../widgets/store_profile.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -43,7 +46,39 @@ class StoreDetailView extends GetView<StoreDetailController> {
                       Obx(() {
                         final store = controller.rxStore.value;
                         final products = store?.products;
+                        final customerCtrl = Get.find<CustomerController>();
 
+                        // State A: Network Loading (Reuses your explicit skeleton layouts)
+                        if (customerCtrl.isLoading.value && (products == null || products.isEmpty)) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                "All Products",
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              GridView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: 4,
+                                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 2,
+                                  childAspectRatio: 0.68,
+                                  crossAxisSpacing: 16,
+                                  mainAxisSpacing: 16,
+                                ),
+                                itemBuilder: (context, index) => const ProductSkeletonItem(),
+                              ),
+                            ],
+                          );
+                        }
+
+                        // State B: Missing / Empty Dataset Fallback
                         if (products == null || products.isEmpty) {
                           return Center(
                             child: Padding(
@@ -71,7 +106,45 @@ class StoreDetailView extends GetView<StoreDetailController> {
                           );
                         }
 
-                        return const SizedBox.shrink();
+                        // State C: Active List Population with Runtime Type Safety Guards
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "All Products",
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              ),
+                            ),
+                            // 1. Reduced/Removed the gap here
+                            const SizedBox(height: 16),
+                            GridView.builder(
+                              padding: EdgeInsets.zero, // 2. CRITICAL: Removes default top padding inside GridView
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: products.length,
+                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                childAspectRatio: 0.68,
+                                crossAxisSpacing: 16,
+                                mainAxisSpacing: 16,
+                              ),
+                              itemBuilder: (context, index) {
+                                final rawItem = products[index];
+
+                                final ProductItem productItem = rawItem is ProductItem
+                                    ? rawItem
+                                    : ProductItem.fromJson(rawItem as Map<String, dynamic>);
+
+                                return ProductCardItem(
+                                  product: productItem,
+                                );
+                              },
+                            ),
+                          ],
+                        );
                       }),
 
                       const SizedBox(height: 40),

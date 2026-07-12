@@ -1,36 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-import '../../../../data/models/response/list_store.dart';
 import '../../controllers/customer_home_controller.dart';
 
 class ListStoreView extends GetView<CustomerController> {
   const ListStoreView({super.key});
-
   static const double _height = 210;
 
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      if (controller.isLoading.value &&
-          controller.storeList.isEmpty) {
-        return const SizedBox(
-          height: _height,
-          child: Center(
-            child: CircularProgressIndicator(),
-          ),
-        );
+      if (controller.isLoading.value && controller.storeList.isEmpty) {
+        return const SizedBox(height: _height, child: Center(child: CircularProgressIndicator()));
       }
 
       if (controller.storeList.isEmpty) {
-        return const SizedBox(
-          height: _height,
-          child: Center(
-            child: Text(
-              'No featured stores available.',
-            ),
-          ),
-        );
+        return const SizedBox(height: _height, child: Center(child: Text('No featured stores available.')));
       }
 
       return SizedBox(
@@ -41,9 +25,7 @@ class ListStoreView extends GetView<CustomerController> {
           physics: const BouncingScrollPhysics(),
           itemCount: controller.storeList.length,
           itemBuilder: (_, index) {
-            return StoreCard(
-              store: controller.storeList[index],
-            );
+            return StoreCard(store: controller.storeList[index]);
           },
         ),
       );
@@ -65,138 +47,159 @@ class StoreCard extends GetView<CustomerController> {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() {
-      // 1. Find the live index inside the total aggregated controller list
-      final int liveIndex = controller.storeList.indexWhere((element) => element.id == store.id);
+    // We don't wrap the whole build in Obx here anymore.
+    // We only use Obx where the data actually changes (the heart icon).
+    final int liveIndex = controller.storeList.indexWhere((element) => element.id == store.id);
+    final dynamic liveStore = (liveIndex != -1) ? controller.storeList[liveIndex] : store;
 
-      // 2. Safely extract the live item using the index.
-      // This guarantees items from page 2, 3, etc., point directly to the active RxList.
-      final dynamic liveStore = (liveIndex != -1)
-          ? controller.storeList[liveIndex]
-          : store;
-
-      final isFav = !controller.isGuestMode && (liveStore.isFav ?? false);
-
-      // ====================================================================
-      // TYPE 1 STYLE: Horizontal Widescreen Layout
-      // ====================================================================
-      if (sizeType == 1) {
-        return Container(
-          height: 120,
-          margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-          decoration: _buildBoxDecoration(),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: InkWell(
-              onTap: () => controller.onStoreClick(liveStore),
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: 140,
-                    height: 120,
-                    child: Stack(
-                      children: [
-                        _StoreBanner(store: liveStore, height: 120),
-                        Positioned(
-                          top: 8,
-                          right: 8,
-                          child: _buildFavoriteIcon(isFav, liveStore),
-                        ),
-                        Positioned(
-                          left: 12,
-                          bottom: 12,
-                          child: _buildFloatingLogo(liveStore),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          _buildStoreTitle(liveStore),
-                          const SizedBox(height: 4),
-                          _buildRating(liveStore),
-                          const SizedBox(height: 8),
-                          _buildVisitButton(liveStore),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      }
-
-      // ====================================================================
-      // TYPE 2 & 3 STYLE: Vertical Top-Down Modular Configurations
-      // ====================================================================
-      final double bannerHeight = (sizeType == 3) ? 150 : 115;
-
+    // ====================================================================
+    // TYPE 1 STYLE
+    // ====================================================================
+    if (sizeType == 1) {
       return Container(
-        width: width,
+        height: 120,
         margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
         decoration: _buildBoxDecoration(),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(16),
           child: InkWell(
             onTap: () => controller.onStoreClick(liveStore),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
               children: [
-                Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    _StoreBanner(store: liveStore, height: bannerHeight),
-                    Positioned(
-                      top: 8,
-                      right: 8,
-                      child: _buildFavoriteIcon(isFav, liveStore),
-                    ),
-                    Positioned(
-                      left: 12,
-                      bottom: -20,
-                      child: _buildFloatingLogo(liveStore),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 24),
-
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Row(
+                SizedBox(
+                  width: 140,
+                  height: 120,
+                  child: Stack(
                     children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            _buildStoreTitle(liveStore),
-                            const SizedBox(height: 4),
-                            _buildRating(liveStore),
-                          ],
-                        ),
+                      _StoreBanner(store: liveStore, height: 120),
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        // REPLACED: Use the new reactive button
+                        child: _FavoriteButton(liveStore: liveStore),
                       ),
-                      const SizedBox(width: 8),
-                      _buildVisitButton(liveStore),
+                      Positioned(
+                        left: 12,
+                        bottom: 12,
+                        child: _buildFloatingLogo(liveStore),
+                      ),
                     ],
                   ),
                 ),
-
-                const SizedBox(height: 11),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _buildStoreTitle(liveStore),
+                        const SizedBox(height: 4),
+                        _buildRating(liveStore),
+                        const SizedBox(height: 8),
+                        _buildVisitButton(liveStore),
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
         ),
       );
-    });
+    }
+
+    // ====================================================================
+    // TYPE 2 & 3 STYLE
+    // ====================================================================
+    final double bannerHeight = (sizeType == 3) ? 150 : 115;
+
+    return Container(
+      width: width,
+      margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+      decoration: _buildBoxDecoration(),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          onTap: () => controller.onStoreClick(liveStore),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  _StoreBanner(store: liveStore, height: bannerHeight),
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    // REPLACED: Use the new reactive button
+                    child: _FavoriteButton(liveStore: liveStore),
+                  ),
+                  Positioned(
+                    left: 12,
+                    bottom: -20,
+                    child: _buildFloatingLogo(liveStore),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _buildStoreTitle(liveStore),
+                          const SizedBox(height: 4),
+                          _buildRating(liveStore),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    _buildVisitButton(liveStore),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 11),
+            ],
+          ),
+        ),
+      ),
+    );
   }
+
+// ... (Keep your existing _buildBoxDecoration, _buildStoreTitle, _buildRating, _buildVisitButton, _buildFloatingLogo)
+// DELETE: _buildFavoriteIcon (it's replaced by the widget below)
+}
+
+// NEW: The Reactive Favorite Button
+class _FavoriteButton extends GetView<CustomerController> {
+  const _FavoriteButton({required this.liveStore});
+  final dynamic liveStore;
+
+  @override
+  Widget build(BuildContext context) {
+    // Only this small part rebuilds when isFav.value changes
+    return Obx(() => GestureDetector(
+      onTap: () => controller.onStoreFavoriteClick(liveStore),
+      child: Container(
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.9),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(
+          liveStore.isFav.value ? Icons.favorite : Icons.favorite_border,
+          color: liveStore.isFav.value ? Colors.red : Colors.grey.shade700,
+          size: 18,
+        ),
+      ),
+    ));
+  }
+}
 
   BoxDecoration _buildBoxDecoration() {
     return BoxDecoration(
@@ -263,21 +266,24 @@ class StoreCard extends GetView<CustomerController> {
     );
   }
 
-  Widget _buildVisitButton(dynamic liveStore) {
-    return SizedBox(
-      height: 32,
-      child: ElevatedButton(
-        onPressed: () => controller.onStoreVisit(liveStore),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF3B59F6),
-          foregroundColor: Colors.white,
-          elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        ),
-        child: const Text('Visit', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+Widget _buildVisitButton(dynamic liveStore) {
+  // Use Get.find<CustomerController>() instead of the 'controller' property
+  final CustomerController controller = Get.find<CustomerController>();
+
+  return SizedBox(
+    height: 32,
+    child: ElevatedButton(
+      onPressed: () => controller.onStoreVisit(liveStore),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color(0xFF3B59F6),
+        foregroundColor: Colors.white,
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       ),
-    );
-  }
+      child: const Text('Visit', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+    ),
+  );
+}
 
   Widget _buildFloatingLogo(dynamic liveStore) {
     return Container(
@@ -297,25 +303,6 @@ class StoreCard extends GetView<CustomerController> {
       ),
     );
   }
-
-  Widget _buildFavoriteIcon(bool isFav, dynamic liveStore) {
-    return GestureDetector(
-      onTap: () => controller.onStoreFavoriteClick(liveStore),
-      child: Container(
-        padding: const EdgeInsets.all(6),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.9),
-          shape: BoxShape.circle,
-        ),
-        child: Icon(
-          isFav ? Icons.favorite : Icons.favorite_border,
-          color: isFav ? Colors.red : Colors.grey.shade700,
-          size: 18,
-        ),
-      ),
-    );
-  }
-}
 
 class _StoreBanner extends StatelessWidget {
   const _StoreBanner({required this.store, required this.height});

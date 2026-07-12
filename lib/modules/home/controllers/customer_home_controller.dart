@@ -238,45 +238,38 @@ class CustomerController extends BaseHomeController {
     if (storeId == null) return;
 
     await requireLogin(() async {
-      final original = store.isFav ?? false;
-      final index = storeList.indexWhere((e) => e.id == storeId);
+      // 1. Store the original state for rollback
+      final bool original = store.isFav.value;
 
       try {
-        store.isFav = !original;
+        // 2. Perform optimistic update (instant UI change)
+        store.isFav.value = !original;
 
-        if (index != -1) {
-          storeList[index] = store;
-          storeList.refresh();
-        }
-
+        // 3. Make API call
         final response = await apiClient.favonstore(storeId);
 
         if (response.statusCode == 200 && response.data != null) {
           final result = StoreFavorite.fromJson(response.data);
-          store.isFav = result.isFav ?? !original;
+          // Update with true server state
+          store.isFav.value = result.isFav ?? !original;
         } else {
-          store.isFav = original;
+          // Rollback on server error
+          store.isFav.value = original;
         }
 
-        final isFav = store.isFav ?? false;
-
+        // 4. Update UI notifications
+        final isFav = store.isFav.value;
         showBottomBar(
           icon: isFav ? Icons.favorite : Icons.favorite_border,
           isFavoriteActive: isFav,
-          message: isFav
-              ? "Added to Favourites"
-              : "Removed from Favourites",
+          message: isFav ? "Added to Favourites" : "Removed from Favourites",
           actionText: isFav ? "View Favourites" : "Undo",
           onActionTap: () => onStoreFavoriteClick(store),
         );
       } catch (_) {
-        store.isFav = original;
+        // 5. Rollback on network error
+        store.isFav.value = original;
         showErrorBar('Network error');
-      } finally {
-        if (index != -1) {
-          storeList[index] = store;
-          storeList.refresh();
-        }
       }
     });
   }
@@ -391,5 +384,9 @@ class CustomerController extends BaseHomeController {
       Get.toNamed(Routes.ALL_STORE);
     });
   }
-  void seeAllProductClick() {}
+  void seeAllProductClick() {
+    requireLogin(() async {
+      Get.toNamed(Routes.ALL_PRODUCT);
+    });
+  }
 }

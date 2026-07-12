@@ -23,14 +23,16 @@ class StoreDetailController extends GetxController {
   }
 
   void _initializeStore() {
-    // 1. Instantly read preview parameters from the previous list view arguments frame
     if (Get.arguments != null && Get.arguments is StoreItem) {
-      rxStore.value = Get.arguments as StoreItem;
-      isFav.value = rxStore.value?.isFav ?? false;
+      final StoreItem store = Get.arguments as StoreItem;
+      rxStore.value = store;
 
-      // 2. Fetch missing deep fields (like productCount and activatedAt) seamlessly in the background
+      // Correct way to assign to an RxBool: access the .value property
+      // We access store.isFav.value to get the underlying boolean
+      isFav.value = store.isFav.value;
+
       if (rxStore.value?.id != null) {
-        _fetchBackgroundDetails(rxStore.value!.id);
+        _fetchBackgroundDetails(rxStore.value!.id!);
       }
     }
   }
@@ -104,8 +106,13 @@ class StoreDetailController extends GetxController {
     final store = rxStore.value;
     if (store == null) return;
 
+    // 1. Toggle local reactive state
     isFav.value = !isFav.value;
-    store.isFav = isFav.value;
+
+    // 2. Assign the bool value to the .value property of the RxBool in your model
+    store.isFav.value = isFav.value;
+
+    // 3. Delegate to the controller
     Get.find<CustomerController>().onStoreFavoriteClick(store);
   }
 }

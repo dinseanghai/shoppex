@@ -1,3 +1,5 @@
+import 'package:get/get.dart';
+
 class ListStore {
   String? status;
   int? statusCode;
@@ -95,16 +97,19 @@ class StoreItem {
   String? email;
   String? status;
   bool? isVerified;
-  bool? isFav;
-  Rating? rating; // Added Rating nested object
 
-  // --- Detail-Specific Fields (Nullable) ---
+  // 1. Made reactive
+  RxBool isFav = false.obs;
+
+  Rating? rating;
+
+  // --- Detail-Specific Fields ---
   String? activatedAt;
   int? ratingsAvg;
   int? ratingsCount;
   dynamic myRating;
   int? productCount;
-  List<dynamic>? products; // Replace 'dynamic' with a Product model if you create one later
+  List<dynamic>? products;
 
   StoreItem({
     this.id,
@@ -117,7 +122,7 @@ class StoreItem {
     this.email,
     this.status,
     this.isVerified,
-    this.isFav,
+    bool? isFav, // Standard bool for constructor
     this.rating,
     this.activatedAt,
     this.ratingsAvg,
@@ -125,7 +130,10 @@ class StoreItem {
     this.myRating,
     this.productCount,
     this.products,
-  });
+  }) {
+    // Initialize the RxBool from the constructor parameter
+    this.isFav.value = isFav ?? false;
+  }
 
   StoreItem.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -138,10 +146,11 @@ class StoreItem {
     email = json['email'];
     status = json['status'];
     isVerified = json['is_verified'];
-    isFav = json['is_fav'];
-    rating = json['rating'] != null ? Rating.fromJson(json['rating']) : null;
 
-    // Will parse correctly when present in Detail endpoint, safely defaults to null in List view
+    // 2. Parse into the RxBool safely
+    isFav.value = json['is_fav'] ?? false;
+
+    rating = json['rating'] != null ? Rating.fromJson(json['rating']) : null;
     activatedAt = json['activated_at'];
     ratingsAvg = json['ratings_avg'];
     ratingsCount = json['ratings_count'];
@@ -162,7 +171,10 @@ class StoreItem {
     data['email'] = email;
     data['status'] = status;
     data['is_verified'] = isVerified;
-    data['is_fav'] = isFav;
+
+    // 3. Access .value for JSON serialization
+    data['is_fav'] = isFav.value;
+
     if (rating != null) {
       data['rating'] = rating!.toJson();
     }

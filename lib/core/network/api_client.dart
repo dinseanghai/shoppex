@@ -131,4 +131,19 @@ class ApiClient extends GetxService {
   Future<Response<dynamic>> storeDetail(String id) async {
     return await _dio.get("${ApiEndpoints.storedetail}/$id");
   }
+
+  Future<Response<dynamic>> productdetail(String id) async {
+    return await _dio.get("${ApiEndpoints.productdetail}/$id");
+  }
+
+  Future<Response<dynamic>> ratingproduct({
+    required String id,
+    required int rating,
+    required String comment,
+  }) async {
+    return await _dio.post(
+      ApiEndpoints.ratingproduct(id), // Clean execution!
+      data: {"rating": rating, "comment": comment},
+    );
+  }
 }

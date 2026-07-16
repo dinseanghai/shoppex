@@ -14,5 +14,7 @@ class ApiEndpoints {
   static String get storedetail => '${AppConfig.baseUrl}/api/v1/stores';
   static String get favonstore => '${AppConfig.baseUrl}/api/v1/stores';
   static String get listproducts => '${AppConfig.baseUrl}/api/v1/products';
+  static String get productdetail => '${AppConfig.baseUrl}/api/v1/products';
   static String get favonproduct => '${AppConfig.baseUrl}/api/v1/products';
+  static String ratingproduct(String id) => '${AppConfig.baseUrl}/v1/products/$id/rating';
 }

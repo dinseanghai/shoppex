@@ -105,12 +105,12 @@ class AppPages {
       binding: AccountBinding(),
     ),
     GetPage(
-      name: _Paths.PRODUCT_DETAIL,
+      name: '${_Paths.PRODUCT_DETAIL}/:id',
       page: () => const ProductDetailView(),
       binding: ProductDetailBinding(),
     ),
     GetPage(
-      name: _Paths.STORE_DETAIL,
+      name: '${_Paths.STORE_DETAIL}/:id',
       page: () => const StoreDetailView(),
       binding: StoreDetailBinding(),
     ),

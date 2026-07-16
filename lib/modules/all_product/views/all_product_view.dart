@@ -12,27 +12,93 @@ class AllProductView extends GetView<AllProductController> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        // 1. Hide the default back button
-        automaticallyImplyLeading: false,
-        // 2. Add your custom button to the leading slot
-        leading: Center(
-          child: _buildIconButton(Icons.arrow_back, () => Get.back()),
-        ),
-        title: const Text("All Products",style: TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 0.5,
-        ),),
-      ),
-      body: CustomScrollView(
-        controller: controller.scrollController,
-        slivers: const [
-          SliverPadding(
-            padding: EdgeInsets.all(16),
-            sliver: ListProductView(),
+      body: SafeArea(
+        // We use NotificationListener to catch scroll events directly from the viewport
+        child: NotificationListener<ScrollNotification>(
+          onNotification: (ScrollNotification scrollInfo) {
+            // Check if user is scrolling near the bottom (200px threshold)
+            if (scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent - 200) {
+              // Trigger load more directly via controller check
+              if (!controller.isMoreLoading.value && controller.currentPage < controller.lastPage) {
+                controller.fetchProducts(page: controller.currentPage + 1);
+              }
+            }
+            return true; // Stop notification bubbling
+          },
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header Segment
+              Padding(
+                padding: const EdgeInsets.only(
+                  left: 16,
+                  right: 16,
+                  top: 12,
+                  bottom: 8,
+                ),
+                child: Row(
+                  children: [
+                    _buildIconButton(Icons.arrow_back, () => Get.back()),
+                    const SizedBox(width: 16),
+                    const Text(
+                      "ALL PRODUCTS",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Product List Segment + Infinite Scroll Indicator
+              Expanded(
+                child: CustomScrollView(
+                  // We still keep the controller here in case you need to programmatically scroll up
+                  controller: controller.scrollController,
+                  slivers: [
+                    // Dynamic body: Show loader OR the product sliver list
+                    Obx(() {
+                      if (controller.isLoading.value) {
+                        return const SliverFillRemaining(
+                          hasScrollBody: false,
+                          child: Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        );
+                      }
+
+                      return const SliverPadding(
+                        padding: EdgeInsets.all(16),
+                        sliver: ListProductView(),
+                      );
+                    }),
+
+                    // Bottom Pagination Loader
+                    SliverToBoxAdapter(
+                      child: Obx(() {
+                        if (controller.isMoreLoading.value) {
+                          return const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 24.0),
+                            child: Center(
+                              child: SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(strokeWidth: 2.5),
+                              ),
+                            ),
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      }),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

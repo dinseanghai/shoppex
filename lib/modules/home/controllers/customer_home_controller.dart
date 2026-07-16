@@ -346,9 +346,9 @@ class CustomerController extends BaseHomeController {
 
   void onProductClick(ProductItem product) {
     requireLogin(() async {
+      // Pass only the ID in the URL string; the detail controller handles the fallback call automatically
       Get.toNamed(
         '${Routes.PRODUCT_DETAIL}/${product.id}',
-        arguments: product,
       );
     });
   }

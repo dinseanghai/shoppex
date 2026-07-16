@@ -23,17 +23,23 @@ class StoreDetailController extends GetxController {
   }
 
   void _initializeStore() {
+    // 1. Handle full StoreItem object passed down
     if (Get.arguments != null && Get.arguments is StoreItem) {
       final StoreItem store = Get.arguments as StoreItem;
       rxStore.value = store;
-
-      // Correct way to assign to an RxBool: access the .value property
-      // We access store.isFav.value to get the underlying boolean
       isFav.value = store.isFav.value;
 
       if (rxStore.value?.id != null) {
         _fetchBackgroundDetails(rxStore.value!.id!);
       }
+    }
+    // 2. Fallback: If only the ID was passed as an argument (int or String)
+    else if (Get.arguments != null && (Get.arguments is int || Get.arguments is String)) {
+      _fetchBackgroundDetails(Get.arguments);
+    }
+    // 3. Optional Fallback: If passed via URL parameter like /store-detail/:id
+    else if (Get.parameters['id'] != null) {
+      _fetchBackgroundDetails(Get.parameters['id']);
     }
   }
 
@@ -46,22 +52,26 @@ class StoreDetailController extends GetxController {
       final response = await customerCtrl.apiClient.storeDetail(storeId.toString());
 
       if (response.statusCode == 200 && response.data != null) {
-        // Parse raw network map structure into your detail wrapper model
         final result = DetailStore.fromJson(response.data);
 
         if (result.storeData != null) {
           final freshData = result.storeData!;
 
-          // 3. Update ONLY the missing deep parameters inside the existing model space.
-          // This modifies the UI text strings instantly without blinking layouts!
-          rxStore.update((val) {
-            val?.activatedAt = freshData.activatedAt;
-            val?.ratingsAvg = freshData.ratingsAvg;
-            val?.ratingsCount = freshData.ratingsCount;
-            val?.productCount = freshData.productCount; // <-- This changes Out of Stock to Low/In Stock!
-            val?.products = freshData.products;
-            val?.myRating = freshData.myRating;
-          });
+          // If rxStore was never initialized because we only passed an ID, initialize it here
+          if (rxStore.value == null) {
+            rxStore.value = freshData; // assuming freshData is a StoreItem type, or map it accordingly
+            isFav.value = freshData.isFav.value;
+          } else {
+            // Safely update existing memory structure
+            rxStore.update((val) {
+              val?.activatedAt = freshData.activatedAt;
+              val?.ratingsAvg = freshData.ratingsAvg;
+              val?.ratingsCount = freshData.ratingsCount;
+              val?.productCount = freshData.productCount;
+              val?.products = freshData.products;
+              val?.myRating = freshData.myRating;
+            });
+          }
         }
       }
     } catch (e, stackTrace) {
@@ -115,4 +125,5 @@ class StoreDetailController extends GetxController {
     // 3. Delegate to the controller
     Get.find<CustomerController>().onStoreFavoriteClick(store);
   }
+
 }
